@@ -45,6 +45,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ===== Creare automată tabele în DB =====
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AISA.Infrastructure.Persistence.AisaDbContext>();
+    db.Database.EnsureCreated();
+}
+
 // ===== Middleware Pipeline =====
 
 // Exception handling global
