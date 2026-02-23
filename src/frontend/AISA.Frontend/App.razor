@@ -1,0 +1,17 @@
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Nu a fost găsit</PageTitle>
+        <LayoutView Layout="@typeof(Layout.MainLayout)">
+            <MudAlert Severity="MudBlazor.Severity.Warning" Class="mt-4">
+                Pagina căutată nu există.
+            </MudAlert>
+        </LayoutView>
+    </NotFound>
+</Router>
