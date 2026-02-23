@@ -1,0 +1,206 @@
+@page "/reviews"
+
+<PageTitle>Recenzii — AISA</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">
+    <MudIcon Icon="@Icons.Material.Filled.RateReview" Class="mr-2" /> Inbox Recenzii
+</MudText>
+
+<!-- Add Review Form -->
+<MudPaper Class="pa-4 mb-4" Elevation="2">
+    <MudText Typo="Typo.h6" Class="mb-3">Adaugă Recenzie</MudText>
+    <MudGrid>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="_newReviewContent"
+                          Label="Textul recenziei"
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          Required="true"
+                          RequiredError="Textul recenziei este obligatoriu" />
+        </MudItem>
+        <MudItem xs="12" sm="5">
+            <MudTextField @bind-Value="_authorName"
+                          Label="Numele autorului (opțional)"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" sm="5">
+            <MudSelect @bind-Value="_source" Label="Sursa" Variant="Variant.Outlined">
+                <MudSelectItem Value="@("Manual")">Manual</MudSelectItem>
+                <MudSelectItem Value="@("Google")">Google</MudSelectItem>
+                <MudSelectItem Value="@("Facebook")">Facebook</MudSelectItem>
+                <MudSelectItem Value="@("TripAdvisor")">TripAdvisor</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="2" Class="d-flex align-end">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       StartIcon="@Icons.Material.Filled.Send"
+                       OnClick="AddReview"
+                       Disabled="_submitting">
+                @if (_submitting)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Analizează
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<!-- Reviews Table -->
+<MudPaper Class="pa-4" Elevation="2">
+    <MudTable Items="_reviews" Hover="true" Striped="true" Dense="true"
+              Filter="FilterFunc" Loading="_loading"
+              LoadingProgressColor="Color.Primary">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Lista Recenziilor</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString"
+                          Placeholder="Caută..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium"
+                          Class="mt-0" />
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.CreatedAt)">Data</MudTableSortLabel></MudTh>
+            <MudTh>Conținut</MudTh>
+            <MudTh>Autor</MudTh>
+            <MudTh>Sursa</MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.SentimentLabel ?? string.Empty)">Sentiment</MudTableSortLabel></MudTh>
+            <MudTh>Scor</MudTh>
+            <MudTh>Acțiuni</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Data">@context.CreatedAt.ToString("dd MMM yyyy")</MudTd>
+            <MudTd DataLabel="Conținut">
+                <MudText Typo="Typo.body2">@(context.Content.Length > 100 ? context.Content[..100] + "..." : context.Content)</MudText>
+            </MudTd>
+            <MudTd DataLabel="Autor">@(context.AuthorName ?? "Anonim")</MudTd>
+            <MudTd DataLabel="Sursa">@context.Source</MudTd>
+            <MudTd DataLabel="Sentiment">
+                <MudChip T="string"
+                         Color="@(context.SentimentLabel == "Positive" ? Color.Success : context.SentimentLabel == "Negative" ? Color.Error : Color.Default)"
+                         Size="Size.Small">
+                    @(context.SentimentLabel ?? "N/A")
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Scor">@((context.SentimentScore ?? 0).ToString("P0"))</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="@(() => DeleteReview(context.Id))" />
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    [Inject] private IApiService ApiService { get; set; } = null!;
+    [Inject] private StateContainer State { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
+
+    private List<ReviewModel> _reviews = new();
+    private bool _loading = true;
+    private bool _submitting;
+    private string _searchString = string.Empty;
+    private string _newReviewContent = string.Empty;
+    private string? _authorName;
+    private string _source = "Manual";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReviews();
+    }
+
+    private async Task LoadReviews()
+    {
+        _loading = true;
+
+        if (State.ActiveBusinessProfileId is not null)
+        {
+            try
+            {
+                _reviews = await ApiService.GetReviewsAsync(State.ActiveBusinessProfileId.Value);
+            }
+            catch (Exception)
+            {
+                Snackbar.Add("Nu s-au putut încărca recenziile.", Severity.Error);
+            }
+        }
+
+        _loading = false;
+    }
+
+    private async Task AddReview()
+    {
+        if (string.IsNullOrWhiteSpace(_newReviewContent))
+        {
+            Snackbar.Add("Textul recenziei este obligatoriu.", Severity.Warning);
+            return;
+        }
+
+        if (State.ActiveBusinessProfileId is null)
+        {
+            Snackbar.Add("Selectează un profil de afacere din Setări.", Severity.Warning);
+            return;
+        }
+
+        _submitting = true;
+
+        try
+        {
+            var review = await ApiService.AddReviewAsync(
+                _newReviewContent, _authorName, _source, State.ActiveBusinessProfileId.Value);
+
+            _reviews.Insert(0, review);
+            _newReviewContent = string.Empty;
+            _authorName = null;
+            _source = "Manual";
+
+            var sentimentEmoji = review.SentimentLabel switch
+            {
+                "Positive" => "😊",
+                "Negative" => "😞",
+                _ => "😐"
+            };
+
+            Snackbar.Add($"Recenzie analizată: {sentimentEmoji} {review.SentimentLabel} ({(review.SentimentScore ?? 0):P0})", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Eroare: {ex.Message}", Severity.Error);
+        }
+
+        _submitting = false;
+    }
+
+    private async Task DeleteReview(Guid id)
+    {
+        try
+        {
+            await ApiService.DeleteReviewAsync(id);
+            _reviews.RemoveAll(r => r.Id == id);
+            Snackbar.Add("Recenzie ștearsă.", Severity.Info);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Eroare la ștergerea recenziei.", Severity.Error);
+        }
+    }
+
+    private bool FilterFunc(ReviewModel review)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        return review.Content.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+            || (review.AuthorName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false)
+            || review.Source.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
+    }
+}

@@ -1,0 +1,173 @@
+@page "/"
+
+<PageTitle>Dashboard — AISA</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">
+    <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" /> Dashboard
+</MudText>
+
+@if (_loading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+}
+else
+{
+    <!-- Stat Cards -->
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="stat-card" Elevation="2">
+                <MudIcon Icon="@Icons.Material.Filled.RateReview" Color="Color.Primary" Size="Size.Large" />
+                <div class="stat-value mt-2">@_totalReviews</div>
+                <div class="stat-label">Total Recenzii</div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="stat-card" Elevation="2">
+                <MudIcon Icon="@Icons.Material.Filled.ThumbUp" Color="Color.Success" Size="Size.Large" />
+                <div class="stat-value mt-2" style="color: var(--aisa-success);">@_positiveCount</div>
+                <div class="stat-label">Pozitive</div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="stat-card" Elevation="2">
+                <MudIcon Icon="@Icons.Material.Filled.ThumbDown" Color="Color.Error" Size="Size.Large" />
+                <div class="stat-value mt-2" style="color: var(--aisa-danger);">@_negativeCount</div>
+                <div class="stat-label">Negative</div>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="stat-card" Elevation="2">
+                <MudIcon Icon="@Icons.Material.Filled.Favorite" Color="Color.Secondary" Size="Size.Large" />
+                <div class="stat-value mt-2" style="color: var(--mud-palette-secondary);">@_healthScore%</div>
+                <div class="stat-label">Scor Sănătate</div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Sentiment Chart Placeholder -->
+    <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudText Typo="Typo.h6" Class="mb-3">
+            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-1" /> Evoluția Sentimentului
+        </MudText>
+        @if (_trends.Any())
+        {
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Total</th>
+                        <th>Pozitive</th>
+                        <th>Negative</th>
+                        <th>Neutre</th>
+                        <th>Scor Mediu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var trend in _trends)
+                    {
+                        <tr>
+                            <td>@trend.Date.ToString("dd MMM yyyy")</td>
+                            <td>@trend.TotalReviews</td>
+                            <td class="sentiment-positive">@trend.PositiveCount</td>
+                            <td class="sentiment-negative">@trend.NegativeCount</td>
+                            <td class="sentiment-neutral">@trend.NeutralCount</td>
+                            <td>@trend.AverageScore.ToString("F2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                Nu există date de trend disponibile. Adaugă recenzii pentru a vedea evoluția sentimentului.
+            </MudAlert>
+        }
+    </MudPaper>
+
+    <!-- Recent Reviews -->
+    <MudPaper Class="pa-4" Elevation="2">
+        <MudText Typo="Typo.h6" Class="mb-3">
+            <MudIcon Icon="@Icons.Material.Filled.NewReleases" Class="mr-1" /> Ultimele Recenzii
+        </MudText>
+        @if (_recentReviews.Any())
+        {
+            @foreach (var review in _recentReviews)
+            {
+                var cardClass = review.SentimentLabel?.ToLower() switch
+                {
+                    "positive" => "positive",
+                    "negative" => "negative",
+                    _ => "neutral"
+                };
+                <MudPaper Class="@($"review-card {cardClass} pa-3 mb-2")" Elevation="1">
+                    <MudGrid>
+                        <MudItem xs="9">
+                            <MudText Typo="Typo.body1">@review.Content</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @(review.AuthorName ?? "Anonim") · @review.Source · @review.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="3" Style="text-align: right;">
+                            <MudChip T="string"
+                                     Color="@(review.SentimentLabel == "Positive" ? Color.Success : review.SentimentLabel == "Negative" ? Color.Error : Color.Default)"
+                                     Size="Size.Small">
+                                @(review.SentimentLabel ?? "N/A")
+                            </MudChip>
+                            <MudText Typo="Typo.caption" Class="mt-1">
+                                @((review.SentimentScore ?? 0).ToString("P0"))
+                            </MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            }
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                Nu există recenzii încă. Mergi la pagina Recenzii pentru a adăuga una.
+            </MudAlert>
+        }
+    </MudPaper>
+}
+
+@code {
+    [Inject] private IApiService ApiService { get; set; } = null!;
+    [Inject] private StateContainer State { get; set; } = null!;
+
+    private bool _loading = true;
+    private int _totalReviews;
+    private int _positiveCount;
+    private int _negativeCount;
+    private int _healthScore;
+    private List<SentimentTrendModel> _trends = new();
+    private List<ReviewModel> _recentReviews = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (State.ActiveBusinessProfileId is not null)
+        {
+            try
+            {
+                var reviews = await ApiService.GetReviewsAsync(State.ActiveBusinessProfileId.Value);
+                _trends = await ApiService.GetSentimentTrendsAsync(State.ActiveBusinessProfileId.Value);
+
+                _totalReviews = reviews.Count;
+                _positiveCount = reviews.Count(r => r.SentimentLabel == "Positive");
+                _negativeCount = reviews.Count(r => r.SentimentLabel == "Negative");
+                _healthScore = _totalReviews > 0
+                    ? (int)Math.Round((double)_positiveCount / _totalReviews * 100)
+                    : 0;
+
+                _recentReviews = reviews.Take(5).ToList();
+                State.Reviews = reviews;
+            }
+            catch (Exception)
+            {
+                // API nu e disponibil — afișăm date goale
+            }
+        }
+
+        _loading = false;
+    }
+}

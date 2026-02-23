@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+  # ═══ PostgreSQL Database ═══
+  postgres:
+    image: postgres:16-alpine
+    container_name: aisa-db
+    environment:
+      POSTGRES_DB: aisa_db
+      POSTGRES_USER: aisa_user
+      POSTGRES_PASSWORD: aisa_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aisa_user -d aisa_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ═══ AI Sentiment Microservice (Python) ═══
+  ai-service:
+    build:
+      context: ./src/ai-service
+      dockerfile: Dockerfile
+    container_name: aisa-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s  # Modelul AI are nevoie de timp la prima încărcare
+
+  # ═══ Backend API (.NET) ═══
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: AISA.API/Dockerfile
+    container_name: aisa-api
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=aisa_db;Username=aisa_user;Password=aisa_password
+      - AiService__BaseUrl=http://ai-service:8000
+      - Frontend__Url=http://localhost:5010
+
+  # ═══ Frontend Blazor WASM ═══
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    container_name: aisa-frontend
+    ports:
+      - "5010:5010"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

@@ -1,0 +1,43 @@
+# ===== .NET =====
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+*.sln.docstates
+**/appsettings.*.json
+!**/appsettings.json
+!**/appsettings.Development.json
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+venv/
+.venv/
+.env
+*.env.local
+
+# ===== Node/Frontend =====
+node_modules/
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ===== Docker =====
+docker-compose.override.yml
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log
+logs/

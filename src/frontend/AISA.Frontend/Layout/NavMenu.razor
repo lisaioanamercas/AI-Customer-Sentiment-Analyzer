@@ -1,0 +1,33 @@
+<MudNavMenu>
+    <MudText Typo="Typo.subtitle2" Class="px-4 mt-4 mb-2" Style="color: var(--mud-palette-text-secondary);">
+        NAVIGARE
+    </MudText>
+
+    <MudNavLink Href="/"
+                Match="NavLinkMatch.All"
+                Icon="@Icons.Material.Filled.Dashboard">
+        Dashboard
+    </MudNavLink>
+
+    <MudNavLink Href="/reviews"
+                Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Filled.RateReview">
+        Recenzii
+    </MudNavLink>
+
+    <MudNavLink Href="/settings"
+                Match="NavLinkMatch.Prefix"
+                Icon="@Icons.Material.Filled.Settings">
+        Setări
+    </MudNavLink>
+
+    <MudDivider Class="my-2" />
+
+    <MudText Typo="Typo.subtitle2" Class="px-4 mt-2 mb-2" Style="color: var(--mud-palette-text-secondary);">
+        PLAN
+    </MudText>
+
+    <MudNavLink Icon="@Icons.Material.Filled.Star" Disabled="true">
+        Free Tier (50 recenzii/lună)
+    </MudNavLink>
+</MudNavMenu>

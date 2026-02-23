@@ -1,0 +1,109 @@
+@page "/settings"
+
+<PageTitle>Setări — AISA</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">
+    <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" /> Setări Profil
+</MudText>
+
+<MudPaper Class="pa-4" Elevation="2">
+    <MudText Typo="Typo.h6" Class="mb-3">Profil Afacere</MudText>
+
+    @if (State.CurrentProfile is not null)
+    {
+        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mb-3">
+            Profil activ: <strong>@State.CurrentProfile.Name</strong>
+            (@State.CurrentProfile.SubscriptionTier · @State.CurrentProfile.ReviewCount recenzii)
+        </MudAlert>
+    }
+
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="_name"
+                          Label="Numele afacerii"
+                          Variant="Variant.Outlined"
+                          Required="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudSelect @bind-Value="_category" Label="Categorie" Variant="Variant.Outlined">
+                <MudSelectItem Value="@("Restaurant")">Restaurant</MudSelectItem>
+                <MudSelectItem Value="@("Cafenea")">Cafenea</MudSelectItem>
+                <MudSelectItem Value="@("Clinică")">Clinică</MudSelectItem>
+                <MudSelectItem Value="@("Hotel")">Hotel</MudSelectItem>
+                <MudSelectItem Value="@("Magazin")">Magazin</MudSelectItem>
+                <MudSelectItem Value="@("Altele")">Altele</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="_description"
+                          Label="Descriere"
+                          Variant="Variant.Outlined"
+                          Lines="2" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="_address"
+                          Label="Adresă"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="SaveProfile"
+                       Disabled="_saving">
+                @if (_saving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Salvează Profilul
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    [Inject] private IApiService ApiService { get; set; } = null!;
+    [Inject] private StateContainer State { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
+
+    private string _name = string.Empty;
+    private string? _description;
+    private string? _category;
+    private string? _address;
+    private bool _saving;
+
+    protected override void OnInitialized()
+    {
+        if (State.CurrentProfile is not null)
+        {
+            _name = State.CurrentProfile.Name;
+            _description = State.CurrentProfile.Description;
+            _category = State.CurrentProfile.Category;
+            _address = State.CurrentProfile.Address;
+        }
+    }
+
+    private async Task SaveProfile()
+    {
+        if (string.IsNullOrWhiteSpace(_name))
+        {
+            Snackbar.Add("Numele afacerii este obligatoriu.", Severity.Warning);
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            var profile = await ApiService.CreateBusinessProfileAsync(_name, _description, _category, _address);
+            State.CurrentProfile = profile;
+            Snackbar.Add("Profil salvat cu succes!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Eroare: {ex.Message}", Severity.Error);
+        }
+
+        _saving = false;
+    }
+}
