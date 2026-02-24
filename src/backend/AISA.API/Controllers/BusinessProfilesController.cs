@@ -2,12 +2,14 @@ using AISA.Application.BusinessProfiles.Commands.CreateBusinessProfile;
 using AISA.Application.BusinessProfiles.DTOs;
 using AISA.Application.BusinessProfiles.Queries.GetBusinessProfile;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AISA.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class BusinessProfilesController : ControllerBase
 {
     private readonly IMediator _mediator;

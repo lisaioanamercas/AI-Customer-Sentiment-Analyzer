@@ -1,0 +1,202 @@
+@page "/register"
+@layout EmptyLayout
+
+<PageTitle>Înregistrare — AISA</PageTitle>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <MudIcon Icon="@Icons.Material.Filled.Psychology" Size="Size.Large" Color="Color.Primary" />
+            <MudText Typo="Typo.h4" Class="auth-title">AISA</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Creează un cont nou</MudText>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4" Dense="true"
+                      ShowCloseIcon="true" CloseIconClicked="() => _errorMessage = string.Empty">
+                @_errorMessage
+            </MudAlert>
+        }
+
+        @if (!string.IsNullOrEmpty(_successMessage))
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Class="mb-4" Dense="true">
+                @_successMessage
+            </MudAlert>
+        }
+
+        <MudTextField @bind-Value="_fullName"
+                      Label="Nume complet"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Person"
+                      Class="mb-3"
+                      Required="true"
+                      Immediate="true" />
+
+        <MudTextField @bind-Value="_email"
+                      Label="Email"
+                      Variant="Variant.Outlined"
+                      InputType="InputType.Email"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Email"
+                      Class="mb-3"
+                      Required="true"
+                      Immediate="true"
+                      HelperText="Folosit pentru autentificare" />
+
+        <MudTextField @bind-Value="_password"
+                      Label="Parolă"
+                      Variant="Variant.Outlined"
+                      InputType="@(_showPassword ? InputType.Text : InputType.Password)"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                      OnAdornmentClick="() => _showPassword = !_showPassword"
+                      Class="mb-2"
+                      Required="true"
+                      Immediate="true"
+                      HelperText="Minim 8 caractere, o literă mare, o cifră" />
+
+        @* Indicator forță parolă *@
+        <div class="password-strength mb-3">
+            <MudProgressLinear Value="@_passwordStrength"
+                               Color="@_passwordColor"
+                               Size="Size.Small"
+                               Rounded="true" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                Forță parolă: @_passwordLabel
+            </MudText>
+        </div>
+
+        <MudTextField @bind-Value="_confirmPassword"
+                      Label="Confirmă parola"
+                      Variant="Variant.Outlined"
+                      InputType="InputType.Password"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Lock"
+                      Class="mb-4"
+                      Required="true"
+                      Immediate="true" />
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   FullWidth="true"
+                   Size="Size.Large"
+                   Class="auth-btn mb-3"
+                   Disabled="_loading"
+                   OnClick="HandleRegister">
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Se creează contul...</span>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
+                <span>Creează cont</span>
+            }
+        </MudButton>
+
+        <MudDivider Class="my-3" />
+
+        <div style="text-align: center;">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Ai deja cont?
+                <MudLink Href="/login" Color="Color.Primary" Typo="Typo.body2">
+                    Autentifică-te
+                </MudLink>
+            </MudText>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject] private AuthService AuthService { get; set; } = null!;
+    [Inject] private NavigationManager Navigation { get; set; } = null!;
+    [Inject] private CustomAuthStateProvider AuthStateProvider { get; set; } = null!;
+
+    private string _fullName = string.Empty;
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private string _confirmPassword = string.Empty;
+    private bool _showPassword = false;
+    private bool _loading = false;
+    private string _errorMessage = string.Empty;
+    private string _successMessage = string.Empty;
+
+    private int _passwordStrength => CalculatePasswordStrength(_password);
+    private Color _passwordColor => _passwordStrength switch
+    {
+        < 25 => Color.Error,
+        < 50 => Color.Warning,
+        < 75 => Color.Info,
+        _ => Color.Success
+    };
+    private string _passwordLabel => _passwordStrength switch
+    {
+        < 25 => "Slabă",
+        < 50 => "Medie",
+        < 75 => "Bună",
+        _ => "Puternică"
+    };
+
+    private int CalculatePasswordStrength(string password)
+    {
+        if (string.IsNullOrEmpty(password)) return 0;
+        int score = 0;
+        if (password.Length >= 8) score += 25;
+        if (password.Any(char.IsUpper)) score += 25;
+        if (password.Any(char.IsDigit)) score += 25;
+        if (password.Any(c => !char.IsLetterOrDigit(c))) score += 25;
+        return score;
+    }
+
+    private async Task HandleRegister()
+    {
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(_fullName) || string.IsNullOrWhiteSpace(_email) ||
+            string.IsNullOrWhiteSpace(_password) || string.IsNullOrWhiteSpace(_confirmPassword))
+        {
+            _errorMessage = "Completează toate câmpurile.";
+            return;
+        }
+
+        if (_password != _confirmPassword)
+        {
+            _errorMessage = "Parolele nu coincid.";
+            return;
+        }
+
+        if (_passwordStrength < 75)
+        {
+            _errorMessage = "Parola nu este suficient de puternică. Trebuie minim 8 caractere, o literă mare și o cifră.";
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            var result = await AuthService.RegisterAsync(_fullName, _email, _password, _confirmPassword);
+            if (result.Success)
+            {
+                AuthStateProvider.NotifyAuthStateChanged();
+                Navigation.NavigateTo("/", forceLoad: false);
+            }
+            else
+            {
+                _errorMessage = result.Error;
+            }
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Eroare de conexiune. Verifică dacă backend-ul rulează.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

@@ -24,6 +24,10 @@ public static class DependencyInjection
         // Repositories
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<IBusinessProfileRepository, BusinessProfileRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        // JWT Service
+        services.AddSingleton<AISA.Application.Common.Interfaces.IJwtService, AISA.Infrastructure.Auth.JwtService>();
 
         // AI Sentiment HTTP Client
         services.AddHttpClient<ISentimentAnalysisService, AiSentimentClient>(client =>

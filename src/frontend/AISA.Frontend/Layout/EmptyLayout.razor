@@ -1,0 +1,29 @@
+@inherits LayoutComponentBase
+
+@* Layout gol pentru paginile de autentificare — fără sidebar/appbar *@
+<MudThemeProvider Theme="_theme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@Body
+
+@code {
+    private MudTheme _theme = new MudTheme
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#6366f1",
+            Secondary = "#8b5cf6"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#6366f1",
+            Secondary = "#8b5cf6",
+            Background = "#0f172a",
+            Surface = "#1e293b",
+            TextPrimary = "#f1f5f9",
+            TextSecondary = "#94a3b8"
+        }
+    };
+}

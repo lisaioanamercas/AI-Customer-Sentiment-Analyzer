@@ -16,7 +16,104 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
-/* Sentiment Colors */
+/* ===== Auth Pages ===== */
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+    animation: authBgPulse 8s ease-in-out infinite;
+}
+
+@keyframes authBgPulse {
+
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    50% {
+        transform: scale(1.05) rotate(2deg);
+    }
+}
+
+.auth-card {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3),
+        0 0 100px rgba(99, 102, 241, 0.05);
+    animation: authCardSlideIn 0.5s ease-out;
+}
+
+@keyframes authCardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-title {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-top: 0.5rem;
+}
+
+.auth-btn {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    text-transform: none !important;
+}
+
+.auth-btn:hover {
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
+}
+
+.password-strength {
+    padding: 0 4px;
+}
+
+/* ===== Sentiment Colors ===== */
+
 .sentiment-positive {
     color: var(--aisa-success) !important;
 }
@@ -29,7 +126,8 @@ body {
     color: var(--aisa-neutral) !important;
 }
 
-/* Review Card Styles */
+/* ===== Review Card Styles ===== */
+
 .review-card {
     border-left: 4px solid var(--aisa-neutral);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -52,13 +150,15 @@ body {
     border-left-color: var(--aisa-warning);
 }
 
-/* Health Score Gauge */
+/* ===== Health Score ===== */
+
 .health-score {
     font-size: 3rem;
     font-weight: 700;
 }
 
-/* Dashboard Stats */
+/* ===== Dashboard Stats ===== */
+
 .stat-card {
     text-align: center;
     padding: 1.5rem;

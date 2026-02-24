@@ -15,6 +15,7 @@ public class AisaDbContext : DbContext
     public DbSet<BusinessProfile> BusinessProfiles => Set<BusinessProfile>();
     public DbSet<SentimentResult> SentimentResults => Set<SentimentResult>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,0 +1,119 @@
+@page "/login"
+@layout EmptyLayout
+
+<PageTitle>Login — AISA</PageTitle>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <MudIcon Icon="@Icons.Material.Filled.Psychology" Size="Size.Large" Color="Color.Primary" />
+            <MudText Typo="Typo.h4" Class="auth-title">AISA</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">AI Customer Sentiment Analyzer</MudText>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4" Dense="true"
+                      ShowCloseIcon="true" CloseIconClicked="() => _errorMessage = string.Empty">
+                @_errorMessage
+            </MudAlert>
+        }
+
+        <MudTextField @bind-Value="_email"
+                      Label="Email"
+                      Variant="Variant.Outlined"
+                      InputType="InputType.Email"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Email"
+                      Class="mb-3"
+                      Required="true"
+                      Immediate="true" />
+
+        <MudTextField @bind-Value="_password"
+                      Label="Parolă"
+                      Variant="Variant.Outlined"
+                      InputType="@(_showPassword ? InputType.Text : InputType.Password)"
+                      Adornment="Adornment.End"
+                      AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                      OnAdornmentClick="() => _showPassword = !_showPassword"
+                      Class="mb-4"
+                      Required="true"
+                      Immediate="true" />
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   FullWidth="true"
+                   Size="Size.Large"
+                   Class="auth-btn mb-3"
+                   Disabled="_loading"
+                   OnClick="HandleLogin">
+            @if (_loading)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Se autentifică...</span>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Login" Class="mr-2" />
+                <span>Autentificare</span>
+            }
+        </MudButton>
+
+        <MudDivider Class="my-3" />
+
+        <div style="text-align: center;">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Nu ai cont?
+                <MudLink Href="/register" Color="Color.Primary" Typo="Typo.body2">
+                    Înregistrează-te
+                </MudLink>
+            </MudText>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject] private AuthService AuthService { get; set; } = null!;
+    [Inject] private NavigationManager Navigation { get; set; } = null!;
+    [Inject] private CustomAuthStateProvider AuthStateProvider { get; set; } = null!;
+
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private bool _showPassword = false;
+    private bool _loading = false;
+    private string _errorMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        _errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
+        {
+            _errorMessage = "Completează toate câmpurile.";
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            var result = await AuthService.LoginAsync(_email, _password);
+            if (result.Success)
+            {
+                AuthStateProvider.NotifyAuthStateChanged();
+                Navigation.NavigateTo("/", forceLoad: false);
+            }
+            else
+            {
+                _errorMessage = result.Error;
+            }
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Eroare de conexiune. Verifică dacă backend-ul rulează.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

@@ -4,12 +4,14 @@ using AISA.Application.Reviews.DTOs;
 using AISA.Application.Reviews.Queries.GetReviews;
 using AISA.Application.Reviews.Queries.GetSentimentTrends;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AISA.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ReviewsController : ControllerBase
 {
     private readonly IMediator _mediator;
