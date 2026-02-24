@@ -7,6 +7,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Port explicit pentru dev local
+builder.WebHost.UseUrls("http://localhost:5000");
+
 // ===== Servicii =====
 
 // Application Layer (MediatR, FluentValidation, AutoMapper)
@@ -84,8 +87,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                builder.Configuration.GetValue<string>("Frontend:Url") ?? "http://localhost:5010")
+        policy.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -113,7 +115,7 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Dezactivat — frontend-ul comunică pe HTTP
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
