@@ -1,5 +1,8 @@
 @page "/login"
 @layout EmptyLayout
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
 
 <PageTitle>Login — AISA</PageTitle>
 
@@ -73,10 +76,6 @@
 </div>
 
 @code {
-    [Inject] private AuthService AuthService { get; set; } = null!;
-    [Inject] private NavigationManager Navigation { get; set; } = null!;
-    [Inject] private CustomAuthStateProvider AuthStateProvider { get; set; } = null!;
-
     private string _email = string.Empty;
     private string _password = string.Empty;
     private bool _showPassword = false;

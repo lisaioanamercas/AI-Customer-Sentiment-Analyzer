@@ -1,5 +1,8 @@
 @page "/register"
 @layout EmptyLayout
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
 
 <PageTitle>Înregistrare — AISA</PageTitle>
 
@@ -58,14 +61,13 @@
                       Immediate="true"
                       HelperText="Minim 8 caractere, o literă mare, o cifră" />
 
-        @* Indicator forță parolă *@
         <div class="password-strength mb-3">
-            <MudProgressLinear Value="@_passwordStrength"
-                               Color="@_passwordColor"
+            <MudProgressLinear Value="@GetPasswordStrength()"
+                               Color="@GetPasswordColor()"
                                Size="Size.Small"
                                Rounded="true" />
             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                Forță parolă: @_passwordLabel
+                Forță parolă: @GetPasswordLabel()
             </MudText>
         </div>
 
@@ -112,10 +114,6 @@
 </div>
 
 @code {
-    [Inject] private AuthService AuthService { get; set; } = null!;
-    [Inject] private NavigationManager Navigation { get; set; } = null!;
-    [Inject] private CustomAuthStateProvider AuthStateProvider { get; set; } = null!;
-
     private string _fullName = string.Empty;
     private string _email = string.Empty;
     private string _password = string.Empty;
@@ -125,31 +123,33 @@
     private string _errorMessage = string.Empty;
     private string _successMessage = string.Empty;
 
-    private int _passwordStrength => CalculatePasswordStrength(_password);
-    private Color _passwordColor => _passwordStrength switch
+    private int GetPasswordStrength()
     {
-        < 25 => Color.Error,
-        < 50 => Color.Warning,
-        < 75 => Color.Info,
-        _ => Color.Success
-    };
-    private string _passwordLabel => _passwordStrength switch
-    {
-        < 25 => "Slabă",
-        < 50 => "Medie",
-        < 75 => "Bună",
-        _ => "Puternică"
-    };
-
-    private int CalculatePasswordStrength(string password)
-    {
-        if (string.IsNullOrEmpty(password)) return 0;
+        if (string.IsNullOrEmpty(_password)) return 0;
         int score = 0;
-        if (password.Length >= 8) score += 25;
-        if (password.Any(char.IsUpper)) score += 25;
-        if (password.Any(char.IsDigit)) score += 25;
-        if (password.Any(c => !char.IsLetterOrDigit(c))) score += 25;
+        if (_password.Length >= 8) score += 25;
+        if (_password.Any(char.IsUpper)) score += 25;
+        if (_password.Any(char.IsDigit)) score += 25;
+        if (_password.Any(c => !char.IsLetterOrDigit(c))) score += 25;
         return score;
+    }
+
+    private Color GetPasswordColor()
+    {
+        int strength = GetPasswordStrength();
+        if (strength < 25) return Color.Error;
+        if (strength < 50) return Color.Warning;
+        if (strength < 75) return Color.Info;
+        return Color.Success;
+    }
+
+    private string GetPasswordLabel()
+    {
+        int strength = GetPasswordStrength();
+        if (strength < 25) return "Slabă";
+        if (strength < 50) return "Medie";
+        if (strength < 75) return "Bună";
+        return "Puternică";
     }
 
     private async Task HandleRegister()
@@ -170,7 +170,7 @@
             return;
         }
 
-        if (_passwordStrength < 75)
+        if (GetPasswordStrength() < 75)
         {
             _errorMessage = "Parola nu este suficient de puternică. Trebuie minim 8 caractere, o literă mare și o cifră.";
             return;
