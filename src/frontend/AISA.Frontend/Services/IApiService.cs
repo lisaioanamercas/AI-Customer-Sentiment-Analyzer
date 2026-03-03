@@ -21,4 +21,7 @@ public interface IApiService
 
     // Scraping
     Task<ScrapeResultModel> ScrapeAndImportAsync(Guid businessProfileId, string source, string sortBy, int maxCount);
+    
+    // Import Manual CSV
+    Task<string> ImportCsvAsync(Guid businessProfileId, Microsoft.AspNetCore.Components.Forms.IBrowserFile file);
 }

@@ -45,6 +45,37 @@
     </MudGrid>
 </MudPaper>
 
+<!-- Import Manual CSV Panel -->
+<MudPaper Class="pa-4 mb-4" Elevation="2">
+    <MudText Typo="Typo.h6" Class="mb-3">Import Manual (CSV)</MudText>
+    <MudGrid>
+        <MudItem xs="12" sm="8" Class="d-flex align-center">
+            <MudText Typo="Typo.body2" Class="mr-4">
+                Poți importa manual recenzii folosind un fișier CSV cu coloanele: <b>Textul Recenziei, Nume Autor, Sursa, Data</b>. 
+            </MudText>
+            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="DownloadTemplate" StartIcon="@Icons.Material.Filled.Download">
+                Descarcă Șablon
+            </MudButton>
+        </MudItem>
+        <MudItem xs="12" sm="4" Class="d-flex align-end justify-end">
+            <MudFileUpload T="IBrowserFile" FilesChanged="UploadCsv" Accept=".csv" Disabled="_uploading">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               Disabled="_uploading">
+                        @if (_uploading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Încarcă CSV
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
 <!-- Reviews Table -->
 <MudPaper Class="pa-4" Elevation="2">
     <MudTable Items="_reviews" Hover="true" Striped="true" Dense="true"
@@ -101,10 +132,12 @@
     [Inject] private IApiService ApiService { get; set; } = null!;
     [Inject] private StateContainer State { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private IJSRuntime JS { get; set; } = null!;
 
     private List<ReviewModel> _reviews = new();
     private bool _loading = true;
     private bool _submitting;
+    private bool _uploading;
     private string _searchString = string.Empty;
     
     // Scraper options
@@ -176,6 +209,42 @@
         }
 
         _submitting = false;
+    }
+
+    private async Task DownloadTemplate()
+    {
+        var fileName = "AISA_Template_Recenzii.csv";
+        var content = "Textul Recenziei,Nume Autor,Sursa,Data\n\"E super, recomand!\",\"Ion Popescu\",\"Manual\",\"2023-10-25\"";
+        
+        await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, content);
+    }
+
+    private async Task UploadCsv(IBrowserFile file)
+    {
+        if (State.ActiveBusinessProfileId is null)
+        {
+            Snackbar.Add("Selectează un profil de business activ.", Severity.Warning);
+            return;
+        }
+
+        if (file is null) return;
+
+        _uploading = true;
+        try
+        {
+            var message = await ApiService.ImportCsvAsync(State.ActiveBusinessProfileId.Value, file);
+            Snackbar.Add(message, Severity.Success);
+            await LoadReviews(); // refresh
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _uploading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task DeleteReview(Guid id)

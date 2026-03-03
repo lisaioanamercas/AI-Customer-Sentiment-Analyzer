@@ -125,4 +125,29 @@ public class ApiService : IApiService
         var result = await response.Content.ReadFromJsonAsync<ScrapeResultModel>();
         return result ?? throw new InvalidOperationException("Răspuns invalid de la server.");
     }
+
+    public async Task<string> ImportCsvAsync(Guid businessProfileId, Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
+    {
+        using var content = new MultipartFormDataContent();
+        using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10 MB limit
+        using var streamContent = new StreamContent(stream);
+        
+        content.Add(streamContent, "file", file.Name);
+
+        var response = await _http.PostAsync($"api/reviews/{businessProfileId}/import", content);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<ImportResult>();
+            return result?.Message ?? "Import realizat cu succes.";
+        }
+        else
+        {
+            var error = await response.Content.ReadFromJsonAsync<ErrorResult>();
+            throw new Exception(error?.Message ?? "Eroare la importul fișierului.");
+        }
+    }
+
+    private class ImportResult { public string Message { get; set; } = string.Empty; }
+    private class ErrorResult { public string Message { get; set; } = string.Empty; }
 }

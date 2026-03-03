@@ -23,6 +23,9 @@ public class Review : BaseEntity
     /// <summary>Data originală a recenziei de pe platformă (distinct de CreatedAt)</summary>
     public DateTime? ReviewedAt { get; set; }
 
+    /// <summary>Rating acordat (1-5 stele) — opțional, folosit pentru sortare după relevanță</summary>
+    public int? Rating { get; set; }
+
     /// <summary>FK către profilul de business</summary>
     public Guid BusinessProfileId { get; set; }
 

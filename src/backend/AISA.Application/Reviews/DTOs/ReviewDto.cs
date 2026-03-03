@@ -18,5 +18,8 @@ public class ReviewDto
     public SentimentLabel? SentimentLabel { get; set; }
     public double? SentimentScore { get; set; }
 
+    // Rating (1-5 stele)
+    public int? Rating { get; set; }
+
     public Guid BusinessProfileId { get; set; }
 }

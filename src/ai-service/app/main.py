@@ -1,7 +1,15 @@
-
+import sys
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import analyze, scrape
+
+# FIX PENTRU WINDOWS: Playwright necesită SelectorEventLoop
+if sys.platform == "win32":
+    try:
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    except RuntimeError:
+        pass  # Event loop already created by uvicorn
 
 app = FastAPI(
     title="AISA AI Service",

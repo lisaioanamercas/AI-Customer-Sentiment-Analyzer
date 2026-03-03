@@ -2,8 +2,10 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+import logging
 from app.services.review_scraper import scrape_reviews
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 class ScrapeRequest(BaseModel):
@@ -19,18 +21,26 @@ class ScrapeResponseItem(BaseModel):
     reviewed_at: Optional[datetime] = None
 
 @router.post("/scrape", response_model=List[ScrapeResponseItem])
-def scrape_endpoint(request: ScrapeRequest):
+async def scrape_endpoint(request: ScrapeRequest):
     """
     Endpoint pentru scraping recenzii din surse externe.
-    Executat sincron de FastAPI (într-un thread izolat).
     """
     try:
-        reviews = scrape_reviews(
+        logger.info(f"Received scrape request: source={request.source}, url={request.url}, max_count={request.max_count}")
+        
+        reviews = await scrape_reviews(
             request.url, 
             request.source, 
             request.sort_by, 
             request.max_count
         )
+        
+        logger.info(f"Scraping completed successfully: {len(reviews)} reviews extracted")
         return reviews
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Scraping failed: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Scraping error for {request.source}: {str(e)}"
+        )

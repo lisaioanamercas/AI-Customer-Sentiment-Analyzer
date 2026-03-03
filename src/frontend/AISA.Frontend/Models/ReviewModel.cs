@@ -12,5 +12,6 @@ public class ReviewModel
     public DateTime CreatedAt { get; set; }
     public string? SentimentLabel { get; set; }
     public double? SentimentScore { get; set; }
+    public int? Rating { get; set; }
     public Guid BusinessProfileId { get; set; }
 }

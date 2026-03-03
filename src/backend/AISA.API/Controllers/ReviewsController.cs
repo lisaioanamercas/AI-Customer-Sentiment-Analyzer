@@ -104,4 +104,54 @@ public class ReviewsController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Importă recenzii dintr-un fișier CSV.
+    /// </summary>
+    [HttpPost("{businessProfileId:guid}/import")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ImportCsv(Guid businessProfileId, IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "Fișierul este nul sau gol." });
+
+        if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Se acceptă doar fișiere .csv." });
+
+        try
+        {
+            using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            var csvConfig = new CsvHelper.Configuration.CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)
+            {
+                HasHeaderRecord = true,
+                MissingFieldFound = null,
+                BadDataFound = null
+            };
+            using var csv = new CsvHelper.CsvReader(reader, csvConfig);
+
+            var reviews = new List<ParsedReviewDto>();
+            await csv.ReadAsync();
+            csv.ReadHeader();
+            while (await csv.ReadAsync())
+            {
+                var text = csv.GetField(0);
+                var author = csv.TryGetField(1, out string authorVal) ? authorVal : null;
+                var source = csv.TryGetField(2, out string sourceVal) ? sourceVal : null;
+                var date = csv.TryGetField(3, out string dateVal) ? dateVal : null;
+
+                reviews.Add(new ParsedReviewDto(text, author, source, date));
+            }
+
+            var command = new AISA.Application.Reviews.Commands.ImportReviews.ImportReviewsCommand(businessProfileId, reviews);
+            var importedCount = await _mediator.Send(command, cancellationToken);
+
+            return Ok(new { message = $"Au fost importate {importedCount} recenzii manuale." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = $"Eroare la procesarea CSV: {ex.Message}" });
+        }
+    }
 }
