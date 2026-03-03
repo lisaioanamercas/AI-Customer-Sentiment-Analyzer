@@ -1,4 +1,5 @@
 using AISA.Application.BusinessProfiles.Commands.CreateBusinessProfile;
+using AISA.Application.BusinessProfiles.Commands.UpdateBusinessProfile;
 using AISA.Application.BusinessProfiles.DTOs;
 using AISA.Application.BusinessProfiles.Queries.GetBusinessProfile;
 using MediatR;
@@ -45,5 +46,27 @@ public class BusinessProfilesController : ControllerBase
     {
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetBusinessProfile), new { id = result.Id }, result);
+    }
+
+    /// <summary>
+    /// Actualizează un profil de afacere existent (inclusiv URL-uri scraping).
+    /// </summary>
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(BusinessProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateBusinessProfile(
+        Guid id, [FromBody] UpdateBusinessProfileCommand command, CancellationToken cancellationToken)
+    {
+        // Asigurăm că ID-ul din URL corespunde cu command-ul
+        var commandWithId = command with { Id = id };
+        try
+        {
+            var result = await _mediator.Send(commandWithId, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 }

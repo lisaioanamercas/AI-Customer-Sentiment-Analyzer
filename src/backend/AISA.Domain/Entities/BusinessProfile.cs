@@ -21,6 +21,12 @@ public class BusinessProfile : BaseEntity
     /// <summary>Adresa fizică</summary>
     public string? Address { get; set; }
 
+    /// <summary>URL Google Maps / Google Places pentru scraping recenzii</summary>
+    public string? GoogleMapsUrl { get; set; }
+
+    /// <summary>URL TripAdvisor pentru scraping recenzii</summary>
+    public string? TripAdvisorUrl { get; set; }
+
     /// <summary>Tipul de abonament activ</summary>
     public SubscriptionTier SubscriptionTier { get; set; } = SubscriptionTier.Free;
 

@@ -14,8 +14,14 @@ public class Review : BaseEntity
     /// <summary>Numele autorului recenziei (opțional)</summary>
     public string? AuthorName { get; set; }
 
-    /// <summary>Sursa recenziei (ex: "Google", "Facebook", "Manual")</summary>
+    /// <summary>Sursa recenziei (ex: "Google", "TripAdvisor", "Manual")</summary>
     public string Source { get; set; } = "Manual";
+
+    /// <summary>ID extern din platforma sursă — folosit pentru deduplicare la scraping</summary>
+    public string? ExternalId { get; set; }
+
+    /// <summary>Data originală a recenziei de pe platformă (distinct de CreatedAt)</summary>
+    public DateTime? ReviewedAt { get; set; }
 
     /// <summary>FK către profilul de business</summary>
     public Guid BusinessProfileId { get; set; }

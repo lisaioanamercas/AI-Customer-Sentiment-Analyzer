@@ -10,6 +10,8 @@ public class BusinessProfileDto
     public string? Description { get; set; }
     public string? Category { get; set; }
     public string? Address { get; set; }
+    public string? GoogleMapsUrl { get; set; }
+    public string? TripAdvisorUrl { get; set; }
     public string SubscriptionTier { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public int ReviewCount { get; set; }

@@ -16,4 +16,8 @@ public interface IApiService
     // Business Profiles
     Task<BusinessProfileModel?> GetBusinessProfileAsync(Guid id);
     Task<BusinessProfileModel> CreateBusinessProfileAsync(string name, string? description, string? category, string? address);
+    Task<BusinessProfileModel> UpdateBusinessProfileAsync(Guid id, string name, string? description, string? category, string? address, string? googleMapsUrl, string? tripAdvisorUrl);
+
+    // Scraping
+    Task<ScrapeResultModel> ScrapeAndImportAsync(Guid businessProfileId, string source, string sortBy, int maxCount);
 }

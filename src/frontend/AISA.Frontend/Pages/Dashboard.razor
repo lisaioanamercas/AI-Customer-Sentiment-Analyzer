@@ -2,9 +2,18 @@
 
 <PageTitle>Dashboard — AISA</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">
-    <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" /> Dashboard
-</MudText>
+<div class="d-flex align-center mb-4">
+    <MudText Typo="Typo.h4">
+        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" /> Dashboard
+    </MudText>
+    <MudSpacer />
+    <MudTooltip Text="Reîmprospătează datele (scrape nou)">
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" 
+                       Color="Color.Primary" 
+                       OnClick="RefreshData"
+                       Disabled="_refreshing" />
+    </MudTooltip>
+</div>
 
 @if (_loading)
 {
@@ -136,6 +145,7 @@ else
     [Inject] private StateContainer State { get; set; } = null!;
 
     private bool _loading = true;
+    private bool _refreshing = false;
     private int _totalReviews;
     private int _positiveCount;
     private int _negativeCount;
@@ -144,6 +154,11 @@ else
     private List<ReviewModel> _recentReviews = new();
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
     {
         if (State.ActiveBusinessProfileId is not null)
         {
@@ -169,5 +184,32 @@ else
         }
 
         _loading = false;
+    }
+
+    private async Task RefreshData()
+    {
+        if (State.ActiveBusinessProfileId is null || State.CurrentProfile is null) return;
+
+        _refreshing = true;
+        
+        try
+        {
+            // Scrape implicit din Google dacă este configurat
+            if (!string.IsNullOrEmpty(State.CurrentProfile.GoogleMapsUrl))
+            {
+                await ApiService.ScrapeAndImportAsync(State.ActiveBusinessProfileId.Value, "Google", "newest", 10);
+            }
+            
+            await LoadDashboardData();
+            Snackbar.Add("Date actualizate!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Eroare la actualizare: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _refreshing = false;
+        }
     }
 }

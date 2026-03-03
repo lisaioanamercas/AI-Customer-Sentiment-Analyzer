@@ -40,10 +40,26 @@
                           Variant="Variant.Outlined"
                           Lines="2" />
         </MudItem>
-        <MudItem xs="12">
+        <MudItem xs="12" sm="6">
             <MudTextField @bind-Value="_address"
                           Label="Adresă"
                           Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="_googleMapsUrl"
+                          Label="URL Google Maps / Place ID"
+                          Variant="Variant.Outlined"
+                          Placeholder="Ex: https://www.google.com/maps/place/..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Custom.Brands.Google" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="_tripAdvisorUrl"
+                          Label="URL TripAdvisor"
+                          Variant="Variant.Outlined"
+                          Placeholder="Ex: https://www.tripadvisor.com/..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Public" />
         </MudItem>
         <MudItem xs="12">
             <MudButton Variant="Variant.Filled"
@@ -70,6 +86,8 @@
     private string? _description;
     private string? _category;
     private string? _address;
+    private string? _googleMapsUrl;
+    private string? _tripAdvisorUrl;
     private bool _saving;
 
     protected override void OnInitialized()
@@ -80,6 +98,8 @@
             _description = State.CurrentProfile.Description;
             _category = State.CurrentProfile.Category;
             _address = State.CurrentProfile.Address;
+            _googleMapsUrl = State.CurrentProfile.GoogleMapsUrl;
+            _tripAdvisorUrl = State.CurrentProfile.TripAdvisorUrl;
         }
     }
 
@@ -95,9 +115,29 @@
 
         try
         {
-            var profile = await ApiService.CreateBusinessProfileAsync(_name, _description, _category, _address);
+            BusinessProfileModel profile;
+            
+            if (State.CurrentProfile is not null)
+            {
+                // Update existent
+                profile = await ApiService.UpdateBusinessProfileAsync(
+                    State.CurrentProfile.Id, _name, _description, _category, _address, _googleMapsUrl, _tripAdvisorUrl);
+                Snackbar.Add("Profil actualizat cu succes!", Severity.Success);
+            }
+            else
+            {
+                // Creare nou (legacy support, technically creation should now also support URLs)
+                profile = await ApiService.CreateBusinessProfileAsync(_name, _description, _category, _address);
+                // After create, update with URLs if provided
+                if (!string.IsNullOrEmpty(_googleMapsUrl) || !string.IsNullOrEmpty(_tripAdvisorUrl))
+                {
+                    profile = await ApiService.UpdateBusinessProfileAsync(
+                        profile.Id, _name, _description, _category, _address, _googleMapsUrl, _tripAdvisorUrl);
+                }
+                Snackbar.Add("Profil creat cu succes!", Severity.Success);
+            }
+
             State.CurrentProfile = profile;
-            Snackbar.Add("Profil salvat cu succes!", Severity.Success);
         }
         catch (Exception ex)
         {

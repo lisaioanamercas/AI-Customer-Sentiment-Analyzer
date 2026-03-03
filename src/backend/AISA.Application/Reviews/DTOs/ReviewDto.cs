@@ -12,6 +12,7 @@ public class ReviewDto
     public string? AuthorName { get; set; }
     public string Source { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+    public DateTime? ReviewedAt { get; set; }
 
     // Sentiment
     public SentimentLabel? SentimentLabel { get; set; }

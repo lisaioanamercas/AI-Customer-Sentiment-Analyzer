@@ -89,4 +89,27 @@ public class ApiService : IApiService
         var result = await response.Content.ReadFromJsonAsync<BusinessProfileModel>();
         return result ?? throw new InvalidOperationException("Răspuns invalid de la server.");
     }
+
+    public async Task<BusinessProfileModel> UpdateBusinessProfileAsync(
+        Guid id, string name, string? description, string? category, string? address,
+        string? googleMapsUrl, string? tripAdvisorUrl)
+    {
+        var request = new { name, description, category, address, googleMapsUrl, tripAdvisorUrl };
+        var response = await _http.PutAsJsonAsync($"api/businessprofiles/{id}", request);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<BusinessProfileModel>();
+        return result ?? throw new InvalidOperationException("Răspuns invalid de la server.");
+    }
+
+    public async Task<ScrapeResultModel> ScrapeAndImportAsync(
+        Guid businessProfileId, string source, string sortBy, int maxCount)
+    {
+        var request = new { businessProfileId, source, sortBy, maxCount };
+        var response = await _http.PostAsJsonAsync("api/reviews/scrape", request);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<ScrapeResultModel>();
+        return result ?? throw new InvalidOperationException("Răspuns invalid de la server.");
+    }
 }

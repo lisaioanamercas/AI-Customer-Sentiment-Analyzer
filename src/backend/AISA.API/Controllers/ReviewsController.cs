@@ -1,5 +1,6 @@
 using AISA.Application.Reviews.Commands.AddReview;
 using AISA.Application.Reviews.Commands.DeleteReview;
+using AISA.Application.Reviews.Commands.ScrapeAndImport;
 using AISA.Application.Reviews.DTOs;
 using AISA.Application.Reviews.Queries.GetReviews;
 using AISA.Application.Reviews.Queries.GetSentimentTrends;
@@ -75,5 +76,32 @@ public class ReviewsController : ControllerBase
 
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Scrapează recenzii din Google/TripAdvisor și le importează cu analiză AI.
+    /// Necesită ca URL-urile sursă să fie configurate în profilul afacerii.
+    /// </summary>
+    [HttpPost("scrape")]
+    [ProducesResponseType(typeof(ScrapeResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ScrapeAndImport(
+        [FromBody] ScrapeAndImportReviewsCommand command,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _mediator.Send(command, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

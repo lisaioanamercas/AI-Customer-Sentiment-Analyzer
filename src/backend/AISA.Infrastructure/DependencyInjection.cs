@@ -37,6 +37,14 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(30);
         });
 
+        // Review Scraper HTTP Client
+        services.AddHttpClient<IReviewScraperClient, ReviewScraperClient>(client =>
+        {
+            var aiServiceUrl = configuration["AiService:BaseUrl"] ?? "http://localhost:8000";
+            client.BaseAddress = new Uri(aiServiceUrl);
+            client.Timeout = TimeSpan.FromSeconds(60); // scraping poate dura mai mult
+        });
+
         return services;
     }
 }

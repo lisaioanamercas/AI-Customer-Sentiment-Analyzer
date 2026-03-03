@@ -5,10 +5,10 @@ FastAPI application for analyzing customer review sentiment using DistilBERT.
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import analyze
+from app.routers import analyze, scrape
 
 app = FastAPI(
-    title="AISA AI Sentiment Service",
+    title="AISA AI Service",
     description="Microserviciu de analiză a sentimentului folosind DistilBERT",
     version="1.0.0",
 )
@@ -22,8 +22,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Înregistrăm router-ul de analiză
-app.include_router(analyze.router, prefix="/api", tags=["Sentiment Analysis"])
+# Rute
+app.include_router(analyze.router, prefix="/api", tags=["analyze"])
+app.include_router(scrape.router, prefix="/api", tags=["scrape"])
 
 
 @app.get("/health")

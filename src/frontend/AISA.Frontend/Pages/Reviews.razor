@@ -6,37 +6,34 @@
     <MudIcon Icon="@Icons.Material.Filled.RateReview" Class="mr-2" /> Inbox Recenzii
 </MudText>
 
-<!-- Add Review Form -->
+<!-- Scraper Control Panel -->
 <MudPaper Class="pa-4 mb-4" Elevation="2">
-    <MudText Typo="Typo.h6" Class="mb-3">Adaugă Recenzie</MudText>
+    <MudText Typo="Typo.h6" Class="mb-3">Configurare Scraping</MudText>
     <MudGrid>
-        <MudItem xs="12">
-            <MudTextField @bind-Value="_newReviewContent"
-                          Label="Textul recenziei"
-                          Variant="Variant.Outlined"
-                          Lines="3"
-                          Required="true"
-                          RequiredError="Textul recenziei este obligatoriu" />
-        </MudItem>
-        <MudItem xs="12" sm="5">
-            <MudTextField @bind-Value="_authorName"
-                          Label="Numele autorului (opțional)"
-                          Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" sm="5">
+        <MudItem xs="12" sm="3">
             <MudSelect @bind-Value="_source" Label="Sursa" Variant="Variant.Outlined">
-                <MudSelectItem Value="@("Manual")">Manual</MudSelectItem>
-                <MudSelectItem Value="@("Google")">Google</MudSelectItem>
-                <MudSelectItem Value="@("Facebook")">Facebook</MudSelectItem>
+                <MudSelectItem Value="@("Google")">Google Maps</MudSelectItem>
                 <MudSelectItem Value="@("TripAdvisor")">TripAdvisor</MudSelectItem>
             </MudSelect>
         </MudItem>
-        <MudItem xs="12" sm="2" Class="d-flex align-end">
+        <MudItem xs="12" sm="3">
+            <MudSelect @bind-Value="_sortBy" Label="Ordonează după" Variant="Variant.Outlined">
+                <MudSelectItem Value="@("newest")">Cele mai noi</MudSelectItem>
+                <MudSelectItem Value="@("relevant")">Cele mai relevante</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudNumericField @bind-Value="_maxCount" 
+                             Label="Număr recenzii" 
+                             Variant="Variant.Outlined" 
+                             Min="1" Max="50" />
+        </MudItem>
+        <MudItem xs="12" sm="3" Class="d-flex align-end">
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        FullWidth="true"
-                       StartIcon="@Icons.Material.Filled.Send"
-                       OnClick="AddReview"
+                       StartIcon="@Icons.Material.Filled.AutoFixHigh"
+                       OnClick="RunScraper"
                        Disabled="_submitting">
                 @if (_submitting)
                 {
@@ -109,9 +106,11 @@
     private bool _loading = true;
     private bool _submitting;
     private string _searchString = string.Empty;
-    private string _newReviewContent = string.Empty;
-    private string? _authorName;
-    private string _source = "Manual";
+    
+    // Scraper options
+    private string _source = "Google";
+    private string _sortBy = "newest";
+    private int _maxCount = 20;
 
     protected override async Task OnInitializedAsync()
     {
@@ -137,17 +136,20 @@
         _loading = false;
     }
 
-    private async Task AddReview()
+    private async Task RunScraper()
     {
-        if (string.IsNullOrWhiteSpace(_newReviewContent))
+        if (State.ActiveBusinessProfileId is null || State.CurrentProfile is null)
         {
-            Snackbar.Add("Textul recenziei este obligatoriu.", Severity.Warning);
+            Snackbar.Add("Trebuie să ai un profil activ pentru a folosi scraper-ul.", Severity.Warning);
             return;
         }
 
-        if (State.ActiveBusinessProfileId is null)
+        // Verificăm dacă URL-ul este configurat pentru sursa selectată
+        var url = _source == "Google" ? State.CurrentProfile.GoogleMapsUrl : State.CurrentProfile.TripAdvisorUrl;
+        
+        if (string.IsNullOrWhiteSpace(url))
         {
-            Snackbar.Add("Selectează un profil de afacere din Setări.", Severity.Warning);
+            Snackbar.Add($"Nu ai configurat URL-ul pentru {_source} în Setări!", Severity.Error);
             return;
         }
 
@@ -155,26 +157,22 @@
 
         try
         {
-            var review = await ApiService.AddReviewAsync(
-                _newReviewContent, _authorName, _source, State.ActiveBusinessProfileId.Value);
+            var result = await ApiService.ScrapeAndImportAsync(
+                State.ActiveBusinessProfileId.Value, _source, _sortBy, _maxCount);
 
-            _reviews.Insert(0, review);
-            _newReviewContent = string.Empty;
-            _authorName = null;
-            _source = "Manual";
-
-            var sentimentEmoji = review.SentimentLabel switch
+            if (result.NewCount > 0)
             {
-                "Positive" => "😊",
-                "Negative" => "😞",
-                _ => "😐"
-            };
-
-            Snackbar.Add($"Recenzie analizată: {sentimentEmoji} {review.SentimentLabel} ({(review.SentimentScore ?? 0):P0})", Severity.Success);
+                Snackbar.Add($"Succes: Am importat și analizat {result.NewCount} recenzii noi!", Severity.Success);
+                await LoadReviews(); // Reîncărcăm lista
+            }
+            else
+            {
+                Snackbar.Add("Nu au fost găsite recenzii noi.", Severity.Info);
+            }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Eroare: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Eroare scraping: {ex.Message}", Severity.Error);
         }
 
         _submitting = false;
