@@ -1,9 +1,3 @@
-import asyncio
-import sys
-
-# Fix for Playwright on Windows: MUST be set before any other imports
-if sys.platform == 'win32':
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

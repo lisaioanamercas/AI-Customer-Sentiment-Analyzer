@@ -19,12 +19,13 @@ class ScrapeResponseItem(BaseModel):
     reviewed_at: Optional[datetime] = None
 
 @router.post("/scrape", response_model=List[ScrapeResponseItem])
-async def scrape_endpoint(request: ScrapeRequest):
+def scrape_endpoint(request: ScrapeRequest):
     """
     Endpoint pentru scraping recenzii din surse externe.
+    Executat sincron de FastAPI (într-un thread izolat).
     """
     try:
-        reviews = await scrape_reviews(
+        reviews = scrape_reviews(
             request.url, 
             request.source, 
             request.sort_by, 
