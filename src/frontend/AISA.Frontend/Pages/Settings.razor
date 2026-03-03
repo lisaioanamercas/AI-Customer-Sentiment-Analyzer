@@ -1,4 +1,5 @@
 @page "/settings"
+@implements IDisposable
 
 <PageTitle>Setări — AISA</PageTitle>
 
@@ -92,7 +93,14 @@
 
     protected override void OnInitialized()
     {
-        if (State.CurrentProfile is not null)
+        State.OnChange += StateHasChanged;
+        State.OnChange += PopulateFields;
+        PopulateFields();
+    }
+
+    private void PopulateFields()
+    {
+        if (State.CurrentProfile is not null && string.IsNullOrEmpty(_name))
         {
             _name = State.CurrentProfile.Name;
             _description = State.CurrentProfile.Description;
@@ -101,6 +109,12 @@
             _googleMapsUrl = State.CurrentProfile.GoogleMapsUrl;
             _tripAdvisorUrl = State.CurrentProfile.TripAdvisorUrl;
         }
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+        State.OnChange -= PopulateFields;
     }
 
     private async Task SaveProfile()
@@ -126,14 +140,9 @@
             }
             else
             {
-                // Creare nou (legacy support, technically creation should now also support URLs)
-                profile = await ApiService.CreateBusinessProfileAsync(_name, _description, _category, _address);
-                // After create, update with URLs if provided
-                if (!string.IsNullOrEmpty(_googleMapsUrl) || !string.IsNullOrEmpty(_tripAdvisorUrl))
-                {
-                    profile = await ApiService.UpdateBusinessProfileAsync(
-                        profile.Id, _name, _description, _category, _address, _googleMapsUrl, _tripAdvisorUrl);
-                }
+                // Creare nou (acum include si URL-urile)
+                profile = await ApiService.CreateBusinessProfileAsync(
+                    _name, _description, _category, _address, _googleMapsUrl, _tripAdvisorUrl);
                 Snackbar.Add("Profil creat cu succes!", Severity.Success);
             }
 

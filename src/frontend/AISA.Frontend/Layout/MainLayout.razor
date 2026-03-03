@@ -2,6 +2,8 @@
 @inject AuthService AuthService
 @inject CustomAuthStateProvider AuthStateProvider
 @inject NavigationManager Navigation
+@inject IApiService ApiService
+@inject StateContainer State
 
 <MudThemeProvider Theme="_theme" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -84,6 +86,16 @@
         if (user.Identity?.IsAuthenticated == true)
         {
             _userName = user.Identity.Name ?? "Utilizator";
+            
+            // Incarcă profilul daca nu e deja în State
+            if (State.CurrentProfile is null)
+            {
+                try
+                {
+                    State.CurrentProfile = await ApiService.GetMyBusinessProfileAsync();
+                }
+                catch { /* Silent fail */ }
+            }
         }
     }
 

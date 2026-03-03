@@ -79,10 +79,23 @@ public class ApiService : IApiService
         }
     }
 
-    public async Task<BusinessProfileModel> CreateBusinessProfileAsync(
-        string name, string? description, string? category, string? address)
+    public async Task<BusinessProfileModel?> GetMyBusinessProfileAsync()
     {
-        var request = new { name, description, category, address };
+        try
+        {
+            return await _http.GetFromJsonAsync<BusinessProfileModel>("api/businessprofiles/my");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+    }
+
+    public async Task<BusinessProfileModel> CreateBusinessProfileAsync(
+        string name, string? description, string? category, string? address,
+        string? googleMapsUrl, string? tripAdvisorUrl)
+    {
+        var request = new { name, description, category, address, googleMapsUrl, tripAdvisorUrl };
         var response = await _http.PostAsJsonAsync("api/businessprofiles", request);
         response.EnsureSuccessStatusCode();
 

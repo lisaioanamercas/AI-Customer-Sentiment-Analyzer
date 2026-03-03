@@ -8,8 +8,11 @@ namespace AISA.Application.BusinessProfiles.Commands.CreateBusinessProfile;
 /// </summary>
 public record CreateBusinessProfileCommand : IRequest<BusinessProfileDto>
 {
+    public Guid UserId { get; init; }
     public string Name { get; init; } = string.Empty;
     public string? Description { get; init; }
     public string? Category { get; init; }
     public string? Address { get; init; }
+    public string? GoogleMapsUrl { get; init; }
+    public string? TripAdvisorUrl { get; init; }
 }

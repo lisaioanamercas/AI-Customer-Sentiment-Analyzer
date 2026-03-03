@@ -2,6 +2,8 @@ using AISA.Application.BusinessProfiles.Commands.CreateBusinessProfile;
 using AISA.Application.BusinessProfiles.Commands.UpdateBusinessProfile;
 using AISA.Application.BusinessProfiles.DTOs;
 using AISA.Application.BusinessProfiles.Queries.GetBusinessProfile;
+using AISA.Application.BusinessProfiles.Queries.GetMyBusinessProfile;
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +39,26 @@ public class BusinessProfilesController : ControllerBase
     }
 
     /// <summary>
+    /// Obține profilul de afacere al utilizatorului curent.
+    /// </summary>
+    [HttpGet("my")]
+    [ProducesResponseType(typeof(BusinessProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetMyBusinessProfile(CancellationToken cancellationToken)
+    {
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdString, out var userId))
+            return Unauthorized();
+
+        var result = await _mediator.Send(new GetMyBusinessProfileQuery(userId), cancellationToken);
+
+        if (result is null)
+            return NotFound(new { message = "Nu ai un profil de afacere asociat." });
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Creează un profil de afacere nou.
     /// </summary>
     [HttpPost]
@@ -44,7 +66,12 @@ public class BusinessProfilesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateBusinessProfile([FromBody] CreateBusinessProfileCommand command, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command, cancellationToken);
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdString, out var userId))
+            return Unauthorized();
+
+        var commandWithUserId = command with { UserId = userId };
+        var result = await _mediator.Send(commandWithUserId, cancellationToken);
         return CreatedAtAction(nameof(GetBusinessProfile), new { id = result.Id }, result);
     }
 
