@@ -14,4 +14,5 @@ public interface IReviewRepository
     Task UpdateAsync(Review review, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<int> GetReviewCountForMonthAsync(Guid businessProfileId, DateTime month, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Review>> GetUnanalyzedAsync(Guid businessProfileId, int maxCount, CancellationToken cancellationToken = default);
 }

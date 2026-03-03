@@ -10,13 +10,15 @@ from transformers import pipeline  # type: ignore
 
 logger = logging.getLogger(__name__)
 
-# Maparea etichetelor modelului HF la etichetele AISA
+# XLM-RoBERTa returnează direct "Positive", "Negative", "Neutral"
+# Maparea rămâne pentru compatibilitate cu labeluri vechi HF
 LABEL_MAP = {
     "POSITIVE": "Positive",
     "NEGATIVE": "Negative",
     "NEUTRAL": "Neutral",
-    # Modelul distilbert-base-uncased-finetuned-sst-2-english are doar POSITIVE/NEGATIVE
-    # Vom trata scoruri joase ca Neutral
+    "Positive": "Positive",
+    "Negative": "Negative",
+    "Neutral": "Neutral",
 }
 
 
@@ -24,12 +26,13 @@ LABEL_MAP = {
 def get_sentiment_pipeline():
     """
     Încarcă pipeline-ul de sentiment analysis o singură dată (singleton via cache).
-    Folosește distilbert-base-uncased-finetuned-sst-2-english.
+    Folosește XLM-RoBERTa multilingual — suportă română, engleză și alte 8 limbi.
+    Download ~500MB la prima rulare, după aceea e cached local.
     """
-    logger.info("Încărcare model de sentiment analysis...")
+    logger.info("Încărcare model de sentiment analysis multilingual...")
     sentiment_pipeline = pipeline(
         "sentiment-analysis",
-        model="distilbert-base-uncased-finetuned-sst-2-english",
+        model="cardiffnlp/twitter-xlm-roberta-base-sentiment",
     )
     logger.info("Model încărcat cu succes!")
     return sentiment_pipeline
