@@ -24,7 +24,7 @@ async def scrape_endpoint(request: ScrapeRequest):
     Endpoint pentru scraping recenzii din surse externe.
     """
     try:
-        reviews = scrape_reviews(
+        reviews = await scrape_reviews(
             request.url, 
             request.source, 
             request.sort_by, 

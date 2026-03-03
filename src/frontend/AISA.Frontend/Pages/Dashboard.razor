@@ -143,6 +143,7 @@ else
 @code {
     [Inject] private IApiService ApiService { get; set; } = null!;
     [Inject] private StateContainer State { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
     private bool _loading = true;
     private bool _refreshing = false;
