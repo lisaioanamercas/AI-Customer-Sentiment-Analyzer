@@ -1,4 +1,5 @@
 @page "/"
+@implements IDisposable
 
 <PageTitle>Dashboard — AISA</PageTitle>
 
@@ -7,7 +8,7 @@
         <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" /> Dashboard
     </MudText>
     <MudSpacer />
-    <MudTooltip Text="Reîmprospătează datele (scrape nou)">
+    <MudTooltip Text="Refresh data">
         <MudIconButton Icon="@Icons.Material.Filled.Refresh" 
                        Color="Color.Primary" 
                        OnClick="RefreshData"
@@ -27,14 +28,14 @@ else
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.RateReview" Color="Color.Primary" Size="Size.Large" />
                 <div class="stat-value mt-2">@_totalReviews</div>
-                <div class="stat-label">Total Recenzii</div>
+                <div class="stat-label">Total Reviews</div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.ThumbUp" Color="Color.Success" Size="Size.Large" />
                 <div class="stat-value mt-2" style="color: var(--aisa-success);">@_positiveCount</div>
-                <div class="stat-label">Pozitive</div>
+                <div class="stat-label">Positive</div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
@@ -48,27 +49,27 @@ else
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.Favorite" Color="Color.Secondary" Size="Size.Large" />
                 <div class="stat-value mt-2" style="color: var(--mud-palette-secondary);">@_healthScore%</div>
-                <div class="stat-label">Scor Sănătate</div>
+                <div class="stat-label">Health Score</div>
             </MudPaper>
         </MudItem>
     </MudGrid>
 
-    <!-- Sentiment Chart Placeholder -->
+    <!-- Sentiment Trend Table -->
     <MudPaper Class="pa-4 mb-4" Elevation="2">
         <MudText Typo="Typo.h6" Class="mb-3">
-            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-1" /> Evoluția Sentimentului
+            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-1" /> Sentiment Evolution
         </MudText>
         @if (_trends.Any())
         {
             <MudSimpleTable Dense="true" Hover="true" Striped="true">
                 <thead>
                     <tr>
-                        <th>Data</th>
+                        <th>Date</th>
                         <th>Total</th>
-                        <th>Pozitive</th>
+                        <th>Positive</th>
                         <th>Negative</th>
-                        <th>Neutre</th>
-                        <th>Scor Mediu</th>
+                        <th>Neutral</th>
+                        <th>Avg Score</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -89,7 +90,7 @@ else
         else
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                Nu există date de trend disponibile. Adaugă recenzii pentru a vedea evoluția sentimentului.
+                No trend data yet. Analyze some reviews to see sentiment evolution.
             </MudAlert>
         }
     </MudPaper>
@@ -97,7 +98,7 @@ else
     <!-- Recent Reviews -->
     <MudPaper Class="pa-4" Elevation="2">
         <MudText Typo="Typo.h6" Class="mb-3">
-            <MudIcon Icon="@Icons.Material.Filled.NewReleases" Class="mr-1" /> Ultimele Recenzii
+            <MudIcon Icon="@Icons.Material.Filled.NewReleases" Class="mr-1" /> Recent Reviews
         </MudText>
         @if (_recentReviews.Any())
         {
@@ -114,7 +115,7 @@ else
                         <MudItem xs="9">
                             <MudText Typo="Typo.body1">@review.Content</MudText>
                             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                @(review.AuthorName ?? "Anonim") · @review.Source · @review.CreatedAt.ToString("dd MMM yyyy HH:mm")
+                                @(review.AuthorName ?? "Anonymous") · @review.Source · @review.CreatedAt.ToString("dd MMM yyyy HH:mm")
                             </MudText>
                         </MudItem>
                         <MudItem xs="3" Style="text-align: right;">
@@ -134,7 +135,7 @@ else
         else
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                Nu există recenzii încă. Mergi la pagina Recenzii pentru a adăuga una.
+                No reviews yet. Go to the Reviews page to import some.
             </MudAlert>
         }
     </MudPaper>
@@ -156,7 +157,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        State.OnChange += OnStateChanged;
         await LoadDashboardData();
+    }
+
+    private async void OnStateChanged()
+    {
+        await LoadDashboardData();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadDashboardData()
@@ -175,12 +183,12 @@ else
                     ? (int)Math.Round((double)_positiveCount / _totalReviews * 100)
                     : 0;
 
-                _recentReviews = reviews.Take(5).ToList();
+                _recentReviews = reviews.OrderByDescending(r => r.CreatedAt).Take(5).ToList();
                 State.Reviews = reviews;
             }
             catch (Exception)
             {
-                // API nu e disponibil — afișăm date goale
+                // API not available — show empty state
             }
         }
 
@@ -189,28 +197,24 @@ else
 
     private async Task RefreshData()
     {
-        if (State.ActiveBusinessProfileId is null || State.CurrentProfile is null) return;
-
         _refreshing = true;
-        
         try
         {
-            // Scrape implicit din Google dacă este configurat
-            if (!string.IsNullOrEmpty(State.CurrentProfile.GoogleMapsUrl))
-            {
-                await ApiService.ScrapeAndImportAsync(State.ActiveBusinessProfileId.Value, "Google", "newest", 10);
-            }
-            
             await LoadDashboardData();
-            Snackbar.Add("Date actualizate!", Severity.Success);
+            Snackbar.Add("Data refreshed!", Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Eroare la actualizare: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Refresh error: {ex.Message}", Severity.Error);
         }
         finally
         {
             _refreshing = false;
         }
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= OnStateChanged;
     }
 }

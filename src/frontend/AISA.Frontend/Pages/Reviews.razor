@@ -1,4 +1,5 @@
 @page "/reviews"
+@implements IDisposable
 
 <PageTitle>Reviews — AISA</PageTitle>
 
@@ -8,39 +9,31 @@
 
 <!-- AI Analysis Panel -->
 <MudPaper Class="pa-4 mb-4" Elevation="2">
-    <MudText Typo="Typo.h6" Class="mb-3">AI Sentiment Analysis</MudText>
-    <MudGrid>
-        <MudItem xs="12" sm="4">
-            <MudNumericField @bind-Value="_analyzeCount"
-                             Label="Reviews to Analyze"
-                             Variant="Variant.Outlined"
-                             Min="1" Max="100"
-                             HelperText="Unanalyzed reviews only" />
-        </MudItem>
-        <MudItem xs="12" sm="4" Class="d-flex align-end">
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       FullWidth="true"
-                       StartIcon="@Icons.Material.Filled.Psychology"
-                       OnClick="RunAnalysis"
-                       Disabled="_analyzing">
-                @if (_analyzing)
-                {
-                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                    <span>Analyzing...</span>
-                }
-                else
-                {
-                    <span>Analyze Reviews</span>
-                }
-            </MudButton>
-        </MudItem>
-        <MudItem xs="12" sm="4" Class="d-flex align-center">
-            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                Make sure the AI service is running on port 8000 before analyzing.
-            </MudText>
-        </MudItem>
-    </MudGrid>
+    <MudText Typo="Typo.h6" Class="mb-4" Align="Align.Center">AI Sentiment Analysis</MudText>
+    <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="4">
+        <MudNumericField @bind-Value="_analyzeCount"
+                         Label="Reviews to Analyze"
+                         Variant="Variant.Outlined"
+                         Min="1" Max="100"
+                         Style="width:260px;"
+                         HelperText="Only unanalyzed reviews" />
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Style="height:56px; min-width:200px;"
+                   StartIcon="@Icons.Material.Filled.Psychology"
+                   OnClick="RunAnalysis"
+                   Disabled="_analyzing">
+            @if (_analyzing)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Analyzing...</span>
+            }
+            else
+            {
+                <span>Analyze Reviews</span>
+            }
+        </MudButton>
+    </MudStack>
 </MudPaper>
 
 <!-- Import Manual CSV Panel -->
@@ -161,7 +154,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        State.OnChange += OnStateChanged;
         await LoadReviews();
+    }
+
+    private async void OnStateChanged()
+    {
+        await LoadReviews();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadReviews()
@@ -277,5 +277,10 @@
         return review.Content.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
             || (review.AuthorName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false)
             || review.Source.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= OnStateChanged;
     }
 }

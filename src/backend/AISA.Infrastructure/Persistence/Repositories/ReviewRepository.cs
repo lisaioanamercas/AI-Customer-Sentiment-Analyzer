@@ -47,14 +47,34 @@ public class ReviewRepository : IReviewRepository
     public async Task UpdateAsync(Review review, CancellationToken cancellationToken = default)
     {
         _context.Reviews.Update(review);
+
+        // EF Core marks ALL graph entities as Modified when Update() is called.
+        // For a brand-new SentimentResult (not yet in DB), we must override to Added
+        // so EF emits INSERT instead of UPDATE (which would silently affect 0 rows).
+        if (review.SentimentResult is not null)
+        {
+            var entry = _context.Entry(review.SentimentResult);
+            bool existsInDb = await _context.SentimentResults
+                .AnyAsync(s => s.Id == review.SentimentResult.Id, cancellationToken);
+
+            entry.State = existsInDb ? EntityState.Modified : EntityState.Added;
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var review = await _context.Reviews.FindAsync(new object[] { id }, cancellationToken);
+        // Must include SentimentResult so EF removes the FK child before the parent row.
+        var review = await _context.Reviews
+            .Include(r => r.SentimentResult)
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+
         if (review is not null)
         {
+            if (review.SentimentResult is not null)
+                _context.SentimentResults.Remove(review.SentimentResult);
+
             _context.Reviews.Remove(review);
             await _context.SaveChangesAsync(cancellationToken);
         }
