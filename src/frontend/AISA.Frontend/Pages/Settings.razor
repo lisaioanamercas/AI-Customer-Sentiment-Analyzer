@@ -1,43 +1,43 @@
 @page "/settings"
 @implements IDisposable
 
-<PageTitle>Setări — AISA</PageTitle>
+<PageTitle>Settings — AISA</PageTitle>
 
 <MudText Typo="Typo.h4" Class="mb-4">
-    <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" /> Setări Profil
+    <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" /> Business Profile Settings
 </MudText>
 
 <MudPaper Class="pa-4" Elevation="2">
-    <MudText Typo="Typo.h6" Class="mb-3">Profil Afacere</MudText>
+    <MudText Typo="Typo.h6" Class="mb-3">Business Profile</MudText>
 
     @if (State.CurrentProfile is not null)
     {
         <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mb-3">
-            Profil activ: <strong>@State.CurrentProfile.Name</strong>
-            (@State.CurrentProfile.SubscriptionTier · @State.CurrentProfile.ReviewCount recenzii)
+            Active profile: <strong>@State.CurrentProfile.Name</strong>
+            (@State.CurrentProfile.SubscriptionTier · @State.CurrentProfile.ReviewCount reviews)
         </MudAlert>
     }
 
     <MudGrid>
         <MudItem xs="12" sm="6">
             <MudTextField @bind-Value="_name"
-                          Label="Numele afacerii"
+                          Label="Business Name"
                           Variant="Variant.Outlined"
                           Required="true" />
         </MudItem>
         <MudItem xs="12" sm="6">
-            <MudSelect @bind-Value="_category" Label="Categorie" Variant="Variant.Outlined">
+            <MudSelect @bind-Value="_category" Label="Category" Variant="Variant.Outlined">
                 <MudSelectItem Value="@("Restaurant")">Restaurant</MudSelectItem>
-                <MudSelectItem Value="@("Cafenea")">Cafenea</MudSelectItem>
-                <MudSelectItem Value="@("Clinică")">Clinică</MudSelectItem>
+                <MudSelectItem Value="@("Cafenea")">Cafe</MudSelectItem>
+                <MudSelectItem Value="@("Clinică")">Clinic</MudSelectItem>
                 <MudSelectItem Value="@("Hotel")">Hotel</MudSelectItem>
-                <MudSelectItem Value="@("Magazin")">Magazin</MudSelectItem>
-                <MudSelectItem Value="@("Altele")">Altele</MudSelectItem>
+                <MudSelectItem Value="@("Magazin")">Shop</MudSelectItem>
+                <MudSelectItem Value="@("Altele")">Other</MudSelectItem>
             </MudSelect>
         </MudItem>
         <MudItem xs="12">
             <MudTextField @bind-Value="_description"
-                          Label="Descriere"
+                          Label="Description"
                           Variant="Variant.Outlined"
                           Lines="2" />
         </MudItem>
@@ -51,7 +51,7 @@
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                 }
-                Salvează Profilul
+                Save Profile
             </MudButton>
         </MudItem>
     </MudGrid>

@@ -1,46 +1,44 @@
 @page "/reviews"
 
-<PageTitle>Recenzii — AISA</PageTitle>
+<PageTitle>Reviews — AISA</PageTitle>
 
 <MudText Typo="Typo.h4" Class="mb-4">
-    <MudIcon Icon="@Icons.Material.Filled.RateReview" Class="mr-2" /> Inbox Recenzii
+    <MudIcon Icon="@Icons.Material.Filled.RateReview" Class="mr-2" /> Review Inbox
 </MudText>
 
-<!-- Scraper Control Panel -->
+<!-- AI Analysis Panel -->
 <MudPaper Class="pa-4 mb-4" Elevation="2">
-    <MudText Typo="Typo.h6" Class="mb-3">Configurare Scraping</MudText>
+    <MudText Typo="Typo.h6" Class="mb-3">AI Sentiment Analysis</MudText>
     <MudGrid>
-        <MudItem xs="12" sm="3">
-            <MudSelect @bind-Value="_source" Label="Sursa" Variant="Variant.Outlined">
-                <MudSelectItem Value="@("Google")">Google Maps</MudSelectItem>
-                <MudSelectItem Value="@("TripAdvisor")">TripAdvisor</MudSelectItem>
-            </MudSelect>
+        <MudItem xs="12" sm="4">
+            <MudNumericField @bind-Value="_analyzeCount"
+                             Label="Reviews to Analyze"
+                             Variant="Variant.Outlined"
+                             Min="1" Max="100"
+                             HelperText="Unanalyzed reviews only" />
         </MudItem>
-        <MudItem xs="12" sm="3">
-            <MudSelect @bind-Value="_sortBy" Label="Ordonează după" Variant="Variant.Outlined">
-                <MudSelectItem Value="@("newest")">Cele mai noi</MudSelectItem>
-                <MudSelectItem Value="@("relevant")">Cele mai relevante</MudSelectItem>
-            </MudSelect>
-        </MudItem>
-        <MudItem xs="12" sm="3">
-            <MudNumericField @bind-Value="_maxCount" 
-                             Label="Număr recenzii" 
-                             Variant="Variant.Outlined" 
-                             Min="1" Max="50" />
-        </MudItem>
-        <MudItem xs="12" sm="3" Class="d-flex align-end">
+        <MudItem xs="12" sm="4" Class="d-flex align-end">
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        FullWidth="true"
-                       StartIcon="@Icons.Material.Filled.AutoFixHigh"
-                       OnClick="RunScraper"
-                       Disabled="_submitting">
-                @if (_submitting)
+                       StartIcon="@Icons.Material.Filled.Psychology"
+                       OnClick="RunAnalysis"
+                       Disabled="_analyzing">
+                @if (_analyzing)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <span>Analyzing...</span>
                 }
-                Analizează
+                else
+                {
+                    <span>Analyze Reviews</span>
+                }
             </MudButton>
+        </MudItem>
+        <MudItem xs="12" sm="4" Class="d-flex align-center">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                Make sure the AI service is running on port 8000 before analyzing.
+            </MudText>
         </MudItem>
     </MudGrid>
 </MudPaper>
@@ -51,10 +49,10 @@
     <MudGrid>
         <MudItem xs="12" sm="8" Class="d-flex align-center">
             <MudText Typo="Typo.body2" Class="mr-4">
-                Poți importa manual recenzii folosind un fișier CSV cu coloanele: <b>Textul Recenziei, Nume Autor, Sursa, Data, Rating (1-5)</b>. 
+                Import reviews from a CSV file with columns: <b>Review Text, Author Name, Source, Date, Rating (1-5)</b>.
             </MudText>
             <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="DownloadTemplate" StartIcon="@Icons.Material.Filled.Download">
-                Descarcă Șablon
+                Download Template
             </MudButton>
         </MudItem>
         <MudItem xs="12" sm="4" Class="d-flex align-end justify-end">
@@ -68,7 +66,7 @@
                         {
                             <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                         }
-                        Încarcă CSV
+                        Upload CSV
                     </MudButton>
                 </ActivatorContent>
             </MudFileUpload>
@@ -82,24 +80,24 @@
               Filter="FilterFunc" Loading="_loading"
               LoadingProgressColor="Color.Primary">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">Lista Recenziilor</MudText>
+            <MudText Typo="Typo.h6">Reviews List</MudText>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString"
-                          Placeholder="Caută..."
+                          Placeholder="Search..."
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           IconSize="Size.Medium"
                           Class="mt-0" />
         </ToolBarContent>
         <HeaderContent>
-            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.CreatedAt)">Data</MudTableSortLabel></MudTh>
-            <MudTh>Conținut</MudTh>
-            <MudTh>Autor</MudTh>
-            <MudTh>Sursa</MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.CreatedAt)">Date</MudTableSortLabel></MudTh>
+            <MudTh>Content</MudTh>
+            <MudTh>Author</MudTh>
+            <MudTh>Source</MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.Rating ?? 0)">Rating</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.SentimentLabel ?? string.Empty)">Sentiment</MudTableSortLabel></MudTh>
-            <MudTh>Scor</MudTh>
-            <MudTh>Acțiuni</MudTh>
+            <MudTh>Score</MudTh>
+            <MudTh>Actions</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Data">@context.CreatedAt.ToString("dd MMM yyyy")</MudTd>
@@ -155,12 +153,11 @@
     private bool _loading = true;
     private bool _submitting;
     private bool _uploading;
+    private bool _analyzing;
     private string _searchString = string.Empty;
-    
-    // Scraper options
-    private string _source = "Google";
-    private string _sortBy = "newest";
-    private int _maxCount = 20;
+
+    // AI Analysis options
+    private int _analyzeCount = 20;
 
     protected override async Task OnInitializedAsync()
     {
@@ -179,53 +176,45 @@
             }
             catch (Exception)
             {
-                Snackbar.Add("Nu s-au putut încărca recenziile.", Severity.Error);
+                Snackbar.Add("Could not load reviews.", Severity.Error);
             }
         }
 
         _loading = false;
     }
 
-    private async Task RunScraper()
+    private async Task RunAnalysis()
     {
-        if (State.ActiveBusinessProfileId is null || State.CurrentProfile is null)
+        if (State.ActiveBusinessProfileId is null)
         {
-            Snackbar.Add("Trebuie să ai un profil activ pentru a folosi scraper-ul.", Severity.Warning);
+            Snackbar.Add("Please select an active business profile.", Severity.Warning);
             return;
         }
 
-        // Verificăm dacă URL-ul este configurat pentru sursa selectată
-        var url = _source == "Google" ? State.CurrentProfile.GoogleMapsUrl : State.CurrentProfile.TripAdvisorUrl;
-        
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            Snackbar.Add($"Nu ai configurat URL-ul pentru {_source} în Setări!", Severity.Error);
-            return;
-        }
-
-        _submitting = true;
-
+        _analyzing = true;
         try
         {
-            var result = await ApiService.ScrapeAndImportAsync(
-                State.ActiveBusinessProfileId.Value, _source, _sortBy, _maxCount);
+            var result = await ApiService.AnalyzeReviewsAsync(
+                State.ActiveBusinessProfileId.Value, _analyzeCount);
 
-            if (result.NewCount > 0)
+            if (result.Analyzed > 0)
             {
-                Snackbar.Add($"Succes: Am importat și analizat {result.NewCount} recenzii noi!", Severity.Success);
-                await LoadReviews(); // Reîncărcăm lista
+                Snackbar.Add($"Done! Analyzed {result.Analyzed} review(s){(result.Failed > 0 ? $", {result.Failed} failed" : "")}.", Severity.Success);
+                await LoadReviews();
             }
             else
             {
-                Snackbar.Add("Nu au fost găsite recenzii noi.", Severity.Info);
+                Snackbar.Add("No unanalyzed reviews found.", Severity.Info);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Eroare scraping: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Analysis error: {ex.Message}", Severity.Error);
         }
-
-        _submitting = false;
+        finally
+        {
+            _analyzing = false;
+        }
     }
 
     private async Task DownloadTemplate()
@@ -272,11 +261,11 @@
         {
             await ApiService.DeleteReviewAsync(id);
             _reviews.RemoveAll(r => r.Id == id);
-            Snackbar.Add("Recenzie ștearsă.", Severity.Info);
+            Snackbar.Add("Review deleted.", Severity.Info);
         }
         catch (Exception)
         {
-            Snackbar.Add("Eroare la ștergerea recenziei.", Severity.Error);
+            Snackbar.Add("Error deleting review.", Severity.Error);
         }
     }
 

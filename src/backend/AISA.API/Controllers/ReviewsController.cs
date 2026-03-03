@@ -1,4 +1,5 @@
 using AISA.Application.Reviews.Commands.AddReview;
+using AISA.Application.Reviews.Commands.AnalyzeReviews;
 using AISA.Application.Reviews.Commands.DeleteReview;
 using AISA.Application.Reviews.Commands.ScrapeAndImport;
 using AISA.Application.Reviews.DTOs;
@@ -103,6 +104,21 @@ public class ReviewsController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// Analyzes sentiment for unanalyzed reviews of a business.
+    /// </summary>
+    [HttpPost("{businessProfileId:guid}/analyze")]
+    [ProducesResponseType(typeof(AnalyzeReviewsResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AnalyzeReviews(
+        Guid businessProfileId,
+        [FromQuery] int maxCount = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new AnalyzeReviewsCommand(businessProfileId, maxCount), cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>

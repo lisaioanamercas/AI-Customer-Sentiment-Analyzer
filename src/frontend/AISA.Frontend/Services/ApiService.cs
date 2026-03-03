@@ -150,4 +150,13 @@ public class ApiService : IApiService
 
     private class ImportResult { public string Message { get; set; } = string.Empty; }
     private class ErrorResult { public string Message { get; set; } = string.Empty; }
+
+    public async Task<AnalyzeResult> AnalyzeReviewsAsync(Guid businessProfileId, int maxCount)
+    {
+        var response = await _http.PostAsync(
+            $"api/reviews/{businessProfileId}/analyze?maxCount={maxCount}", null);
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<AnalyzeResult>();
+        return result ?? throw new InvalidOperationException("Invalid response from server.");
+    }
 }

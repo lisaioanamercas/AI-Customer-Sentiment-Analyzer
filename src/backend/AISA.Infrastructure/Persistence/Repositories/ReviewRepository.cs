@@ -70,4 +70,14 @@ public class ReviewRepository : IReviewRepository
                 && r.CreatedAt >= startOfMonth
                 && r.CreatedAt < endOfMonth, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Review>> GetUnanalyzedAsync(Guid businessProfileId, int maxCount, CancellationToken cancellationToken = default)
+    {
+        return await _context.Reviews
+            .Include(r => r.SentimentResult)
+            .Where(r => r.BusinessProfileId == businessProfileId && r.SentimentResult == null)
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(maxCount)
+            .ToListAsync(cancellationToken);
+    }
 }

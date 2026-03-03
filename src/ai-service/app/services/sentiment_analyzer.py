@@ -10,15 +10,11 @@ from transformers import pipeline  # type: ignore
 
 logger = logging.getLogger(__name__)
 
-# XLM-RoBERTa returnează direct "Positive", "Negative", "Neutral"
-# Maparea rămâne pentru compatibilitate cu labeluri vechi HF
+# Cardiff NLP XLM-RoBERTa can return labels in any casing
 LABEL_MAP = {
-    "POSITIVE": "Positive",
-    "NEGATIVE": "Negative",
-    "NEUTRAL": "Neutral",
-    "Positive": "Positive",
-    "Negative": "Negative",
-    "Neutral": "Neutral",
+    "positive": "Positive",
+    "negative": "Negative",
+    "neutral": "Neutral",
 }
 
 
@@ -50,21 +46,21 @@ def analyze_sentiment(text: str) -> dict:
     """
     sentiment_pipeline = get_sentiment_pipeline()
 
-    # Trunchierea la 512 tokeni (limita modelului)
-    result = sentiment_pipeline(text[:512])[0]
+    try:
+        # top_k=1 ensures a single result; truncation handles long texts
+        result = sentiment_pipeline(text[:512], top_k=1)[0]
+    except Exception as e:
+        logger.error("Pipeline error: %s", e, exc_info=True)
+        raise
 
     raw_label = result["label"]
     score = round(result["score"], 4)
 
-    # Mapare label
-    label = LABEL_MAP.get(raw_label, "Neutral")
-
-    # Dacă scorul e foarte scăzut, considerăm Neutral
-    if score < 0.6:
-        label = "Neutral"
+    # Normalize label to Positive/Negative/Neutral regardless of casing
+    label = LABEL_MAP.get(raw_label.lower(), "Neutral")
 
     logger.info(
-        "Analiză completată: label=%s, score=%.4f (raw: %s)",
+        "Analysis done: label=%s, score=%.4f (raw: %s)",
         label,
         score,
         raw_label,

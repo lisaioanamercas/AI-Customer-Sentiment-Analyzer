@@ -24,4 +24,7 @@ public interface IApiService
     
     // Import Manual CSV
     Task<string> ImportCsvAsync(Guid businessProfileId, Microsoft.AspNetCore.Components.Forms.IBrowserFile file);
+
+    // AI Analysis
+    Task<AnalyzeResult> AnalyzeReviewsAsync(Guid businessProfileId, int maxCount);
 }
