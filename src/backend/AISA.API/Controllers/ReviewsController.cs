@@ -140,8 +140,11 @@ public class ReviewsController : ControllerBase
                 var author = csv.TryGetField(1, out string authorVal) ? authorVal : null;
                 var source = csv.TryGetField(2, out string sourceVal) ? sourceVal : null;
                 var date = csv.TryGetField(3, out string dateVal) ? dateVal : null;
+                int? rating = null;
+                if (csv.TryGetField(4, out string ratingStr) && int.TryParse(ratingStr, out var ratingParsed))
+                    rating = Math.Clamp(ratingParsed, 1, 5);
 
-                reviews.Add(new ParsedReviewDto(text, author, source, date));
+                reviews.Add(new ParsedReviewDto(text, author, source, date, rating));
             }
 
             var command = new AISA.Application.Reviews.Commands.ImportReviews.ImportReviewsCommand(businessProfileId, reviews);

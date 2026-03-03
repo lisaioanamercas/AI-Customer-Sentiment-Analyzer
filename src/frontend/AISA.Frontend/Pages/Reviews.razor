@@ -51,7 +51,7 @@
     <MudGrid>
         <MudItem xs="12" sm="8" Class="d-flex align-center">
             <MudText Typo="Typo.body2" Class="mr-4">
-                Poți importa manual recenzii folosind un fișier CSV cu coloanele: <b>Textul Recenziei, Nume Autor, Sursa, Data</b>. 
+                Poți importa manual recenzii folosind un fișier CSV cu coloanele: <b>Textul Recenziei, Nume Autor, Sursa, Data, Rating (1-5)</b>. 
             </MudText>
             <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="DownloadTemplate" StartIcon="@Icons.Material.Filled.Download">
                 Descarcă Șablon
@@ -96,6 +96,7 @@
             <MudTh>Conținut</MudTh>
             <MudTh>Autor</MudTh>
             <MudTh>Sursa</MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.Rating ?? 0)">Rating</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.SentimentLabel ?? string.Empty)">Sentiment</MudTableSortLabel></MudTh>
             <MudTh>Scor</MudTh>
             <MudTh>Acțiuni</MudTh>
@@ -107,6 +108,22 @@
             </MudTd>
             <MudTd DataLabel="Autor">@(context.AuthorName ?? "Anonim")</MudTd>
             <MudTd DataLabel="Sursa">@context.Source</MudTd>
+            <MudTd DataLabel="Rating">
+                @if (context.Rating.HasValue)
+                {
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        var star = i;
+                        <MudIcon Icon="@(star <= context.Rating.Value ? Icons.Material.Filled.Star : Icons.Material.Outlined.Star)"
+                                 Style="font-size:16px;"
+                                 Color="@(star <= context.Rating.Value ? Color.Warning : Color.Default)" />
+                    }
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
+                }
+            </MudTd>
             <MudTd DataLabel="Sentiment">
                 <MudChip T="string"
                          Color="@(context.SentimentLabel == "Positive" ? Color.Success : context.SentimentLabel == "Negative" ? Color.Error : Color.Default)"
@@ -214,7 +231,9 @@
     private async Task DownloadTemplate()
     {
         var fileName = "AISA_Template_Recenzii.csv";
-        var content = "Textul Recenziei,Nume Autor,Sursa,Data\n\"E super, recomand!\",\"Ion Popescu\",\"Manual\",\"2023-10-25\"";
+        var content = "Textul Recenziei,Nume Autor,Sursa,Data,Rating (1-5)\n" +
+                      "\"Mâncarea a fost excelentă, recomand!\",\"Ion Popescu\",\"Manual\",\"2023-10-25\",5\n" +
+                      "\"Serviciu ok, dar așteptare mare.\",\"Maria I.\",\"Manual\",\"2023-11-02\",3";
         
         await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, content);
     }

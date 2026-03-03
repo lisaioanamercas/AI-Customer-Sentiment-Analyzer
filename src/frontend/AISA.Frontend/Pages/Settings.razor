@@ -41,27 +41,6 @@
                           Variant="Variant.Outlined"
                           Lines="2" />
         </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudTextField @bind-Value="_address"
-                          Label="Adresă"
-                          Variant="Variant.Outlined" />
-        </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudTextField @bind-Value="_googleMapsUrl"
-                          Label="URL Google Maps / Place ID"
-                          Variant="Variant.Outlined"
-                          Placeholder="Ex: https://www.google.com/maps/place/..."
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Custom.Brands.Google" />
-        </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudTextField @bind-Value="_tripAdvisorUrl"
-                          Label="URL TripAdvisor"
-                          Variant="Variant.Outlined"
-                          Placeholder="Ex: https://www.tripadvisor.com/..."
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Public" />
-        </MudItem>
         <MudItem xs="12">
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
@@ -91,11 +70,28 @@
     private string? _tripAdvisorUrl;
     private bool _saving;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        State.OnChange += StateHasChanged;
-        State.OnChange += PopulateFields;
+        State.OnChange += OnStateChanged;
+
+        // Dacă profilul nu e încă în State (ex: refresh direct pe /settings),
+        // îl încărcăm direct de pe API fără să așteptăm MainLayout.
+        if (State.CurrentProfile is null)
+        {
+            try
+            {
+                State.CurrentProfile = await ApiService.GetMyBusinessProfileAsync();
+            }
+            catch { /* ignorăm, formularul rămâne gol */ }
+        }
+
         PopulateFields();
+    }
+
+    private void OnStateChanged()
+    {
+        PopulateFields();
+        InvokeAsync(StateHasChanged); // forțăm re-renderul pe thread-ul UI
     }
 
     private void PopulateFields()
@@ -113,8 +109,7 @@
 
     public void Dispose()
     {
-        State.OnChange -= StateHasChanged;
-        State.OnChange -= PopulateFields;
+        State.OnChange -= OnStateChanged;
     }
 
     private async Task SaveProfile()

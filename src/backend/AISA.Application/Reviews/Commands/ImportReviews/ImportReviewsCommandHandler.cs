@@ -36,7 +36,8 @@ public class ImportReviewsCommandHandler : IRequestHandler<ImportReviewsCommand,
             if (!string.IsNullOrWhiteSpace(parsedDto.DateStr) && 
                 DateTime.TryParse(parsedDto.DateStr, CultureInfo.InvariantCulture, out var parsedDate))
             {
-                reviewedAt = parsedDate;
+                // Npgsql requires DateTimeKind.Utc for 'timestamp with time zone' columns
+                reviewedAt = DateTime.SpecifyKind(parsedDate, DateTimeKind.Utc);
             }
 
             var review = new Review
