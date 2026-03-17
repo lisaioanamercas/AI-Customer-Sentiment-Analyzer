@@ -1,5 +1,6 @@
 @page "/register"
 @layout EmptyLayout
+@inject IStringLocalizer<App> L
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
@@ -11,7 +12,7 @@
         <div class="auth-header">
             <MudIcon Icon="@Icons.Material.Filled.Psychology" Size="Size.Large" Color="Color.Primary" />
             <MudText Typo="Typo.h4" Class="auth-title">AISA</MudText>
-            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">Creează un cont nou</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">@L["CreateAccount"]</MudText>
         </div>
 
         @if (!string.IsNullOrEmpty(_errorMessage))
@@ -30,7 +31,7 @@
         }
 
         <MudTextField @bind-Value="_fullName"
-                      Label="Nume complet"
+                      Label="@L["Name"]"
                       Variant="Variant.Outlined"
                       Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Person"
@@ -50,7 +51,7 @@
                       HelperText="Folosit pentru autentificare" />
 
         <MudTextField @bind-Value="_password"
-                      Label="Parolă"
+                      Label="@L["Password"]"
                       Variant="Variant.Outlined"
                       InputType="@(_showPassword ? InputType.Text : InputType.Password)"
                       Adornment="Adornment.End"
@@ -58,8 +59,7 @@
                       OnAdornmentClick="() => _showPassword = !_showPassword"
                       Class="mb-2"
                       Required="true"
-                      Immediate="true"
-                      HelperText="Minim 8 caractere, o literă mare, o cifră" />
+                      Immediate="true" />
 
         <div class="password-strength mb-3">
             <MudProgressLinear Value="@GetPasswordStrength()"
@@ -67,12 +67,12 @@
                                Size="Size.Small"
                                Rounded="true" />
             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                Forță parolă: @GetPasswordLabel()
+                @L["PasswordStrength"]: @L[GetPasswordLabel()]
             </MudText>
         </div>
 
         <MudTextField @bind-Value="_confirmPassword"
-                      Label="Confirmă parola"
+                      Label="@L["ConfirmPassword"]"
                       Variant="Variant.Outlined"
                       InputType="InputType.Password"
                       Adornment="Adornment.Start"
@@ -91,12 +91,12 @@
             @if (_loading)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                <span>Se creează contul...</span>
+                <span>@L["CreatingAccount"]</span>
             }
             else
             {
                 <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-2" />
-                <span>Creează cont</span>
+                <span>@L["Register"]</span>
             }
         </MudButton>
 
@@ -104,9 +104,9 @@
 
         <div style="text-align: center;">
             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                Ai deja cont?
+                @L["HaveAccount"]
                 <MudLink Href="/login" Color="Color.Primary" Typo="Typo.body2">
-                    Autentifică-te
+                    @L["Login"]
                 </MudLink>
             </MudText>
         </div>
@@ -146,10 +146,10 @@
     private string GetPasswordLabel()
     {
         int strength = GetPasswordStrength();
-        if (strength < 25) return "Slabă";
-        if (strength < 50) return "Medie";
-        if (strength < 75) return "Bună";
-        return "Puternică";
+        if (strength < 25) return "Weak";
+        if (strength < 50) return "Medium";
+        if (strength < 75) return "Good";
+        return "Strong";
     }
 
     private async Task HandleRegister()
