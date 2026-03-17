@@ -19,12 +19,12 @@
                                Edge="Edge.Start"
                                OnClick="@ToggleDrawer" />
                 <MudText Typo="Typo.h6" Class="ml-2">
-                    <strong>AISA</strong> — @L["Dashboard"]
+                    <strong>AISA</strong>
                 </MudText>
                 <MudSpacer />
                 
                 <!-- Language Toggle -->
-                <MudMenu StartIcon="@Icons.Material.Filled.Language" Color="Color.Inherit" Label="@(CultureInfo.CurrentCulture.Name.StartsWith("ro") ? "RO" : "EN")" Direction="Direction.Bottom" OffsetY="true" Dense="true" Class="mr-4">
+                <MudMenu StartIcon="@Icons.Material.Filled.Language" Color="Color.Inherit" Label="@(CultureInfo.CurrentCulture.Name.StartsWith("ro") ? "RO" : "EN")" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true" Class="mr-4">
                     <MudMenuItem OnClick='() => SwitchLanguage("en-US")'>
                         <MudStack Row="true" AlignItems="AlignItems.Center">
                             <span style="font-size: 1.2rem;">🇬🇧</span>

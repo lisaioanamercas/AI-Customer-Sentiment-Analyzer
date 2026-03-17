@@ -4,7 +4,7 @@
 
 <CascadingAuthenticationState>
     <Fluxor.Blazor.Web.StoreInitializer />
-    <Router AppAssembly="@typeof(App).Assembly">
+    <Router AppAssembly="@typeof(AISA.Frontend.App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
                 <NotAuthorized>

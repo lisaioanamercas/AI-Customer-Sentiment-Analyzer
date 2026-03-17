@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using MudBlazor.Services;
 using AISA.Frontend;
 using AISA.Frontend.Services;
@@ -35,10 +36,9 @@ var host = builder.Build();
 
 // Inițializează culture din localStorage
 var js = host.Services.GetRequiredService<IJSRuntime>();
-var cultureResult = await js.InvokeAsync<string>("localStorage.getItem", "aisa_culture");
-var culture = cultureResult ?? "en-US";
-
+var culture = await js.InvokeAsync<string>("blazorCulture.get");
 var cultureInfo = new System.Globalization.CultureInfo(culture);
+
 System.Globalization.CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 

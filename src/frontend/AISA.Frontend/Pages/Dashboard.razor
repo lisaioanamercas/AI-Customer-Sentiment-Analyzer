@@ -1,3 +1,4 @@
+@page "/"
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IStringLocalizer<App> L
 
@@ -61,7 +62,7 @@ else
         <MudText Typo="Typo.h6" Class="mb-3">
             <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-1" /> @L["SentimentEvolution"]
         </MudText>
-        @if (_trends.Any())
+        @if (ReviewState.Value.Trends.Any())
         {
             <MudSimpleTable Dense="true" Hover="true" Striped="true">
                 <thead>
@@ -75,7 +76,7 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var trend in _trends)
+                    @foreach (var trend in ReviewState.Value.Trends)
                     {
                         <tr>
                             <td>@trend.Date.ToString("dd MMM yyyy")</td>
@@ -89,10 +90,10 @@ else
                 </tbody>
             </MudSimpleTable>
         }
-        else
+        else if (!ReviewState.Value.IsLoading)
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                No trend data yet. Analyze some reviews to see sentiment evolution.
+                @L["NoTrendData"]
             </MudAlert>
         }
     </MudPaper>
@@ -151,41 +152,29 @@ else
     [Inject] private IApiService ApiService { get; set; } = null!;
 
     private bool _refreshing = false;
-    private List<SentimentTrendModel> _trends = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await LoadDashboardData();
+        base.OnInitialized();
+        // The data is now loaded automatically by ReviewEffects reacting to AuthState
     }
 
-    private async Task LoadDashboardData()
+    private void LoadDashboardData()
     {
         if (AuthState.Value.BusinessProfileId.HasValue)
         {
             Dispatcher.Dispatch(new FetchReviewsAction(AuthState.Value.BusinessProfileId.Value));
-            try
-            {
-                _trends = await ApiService.GetSentimentTrendsAsync(AuthState.Value.BusinessProfileId.Value);
-            }
-            catch { /* trends optional */ }
+            Dispatcher.Dispatch(new FetchTrendsAction(AuthState.Value.BusinessProfileId.Value));
         }
     }
 
-    private async Task RefreshData()
+    private void RefreshData()
     {
-        _refreshing = true;
-        try
+        if (AuthState.Value.BusinessProfileId.HasValue)
         {
-            await LoadDashboardData();
-            Snackbar.Add("Data refreshed!", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Refresh error: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _refreshing = false;
+            Dispatcher.Dispatch(new FetchReviewsAction(AuthState.Value.BusinessProfileId.Value));
+            Dispatcher.Dispatch(new FetchTrendsAction(AuthState.Value.BusinessProfileId.Value));
+            Snackbar.Add(L["Refreshing"], Severity.Info);
         }
     }
 }

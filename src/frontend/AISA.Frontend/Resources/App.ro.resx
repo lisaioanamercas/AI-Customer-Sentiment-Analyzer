@@ -110,4 +110,7 @@
   <data name="Medium" xml:space="preserve"><value>Medie</value></data>
   <data name="Good" xml:space="preserve"><value>Bună</value></data>
   <data name="Strong" xml:space="preserve"><value>Puternică</value></data>
+  <data name="NoTrendData" xml:space="preserve"><value>Nu există date despre trenduri încă. Analizează câteva recenzii pentru a vedea evoluția.</value></data>
+  <data name="Refreshing" xml:space="preserve"><value>Se reîmprospătează datele...</value></data>
+  <data name="CreateAccount" xml:space="preserve"><value>Creează un cont nou</value></data>
 </root>

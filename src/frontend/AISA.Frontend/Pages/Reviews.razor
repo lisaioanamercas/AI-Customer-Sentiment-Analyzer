@@ -1,3 +1,4 @@
+@page "/reviews"
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 @inject IStringLocalizer<App> L
 
@@ -153,7 +154,7 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        LoadReviews();
+        // Loaded automatically by ReviewEffects
     }
 
     private void LoadReviews()
@@ -161,6 +162,7 @@
         if (AuthState.Value.BusinessProfileId.HasValue)
         {
             Dispatcher.Dispatch(new FetchReviewsAction(AuthState.Value.BusinessProfileId.Value));
+            Dispatcher.Dispatch(new FetchTrendsAction(AuthState.Value.BusinessProfileId.Value));
         }
     }
 

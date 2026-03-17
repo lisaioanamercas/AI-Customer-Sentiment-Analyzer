@@ -13,6 +13,17 @@ public record ReviewsLoadedAction(IReadOnlyList<ReviewModel> Reviews);
 /// <summary>Dispatched when the reviews fetch fails.</summary>
 public record ReviewsLoadFailedAction(string ErrorMessage);
 
+// ── Trends ────────────────────────────────────────────────────────────────────
+
+/// <summary>Dispatch to load sentiment trends for the given business profile.</summary>
+public record FetchTrendsAction(Guid BusinessProfileId);
+
+/// <summary>Dispatched when the trends fetch succeeds.</summary>
+public record TrendsLoadedAction(IReadOnlyList<SentimentTrendModel> Trends);
+
+/// <summary>Dispatched when the trends fetch fails.</summary>
+public record TrendsLoadFailedAction(string ErrorMessage);
+
 // ── Add ───────────────────────────────────────────────────────────────────────
 
 /// <summary>Dispatch to manually add a single review.</summary>

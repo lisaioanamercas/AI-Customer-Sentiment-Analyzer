@@ -19,6 +19,12 @@
         </div>
     </div>
 
+    <script>
+        window.blazorCulture = {
+            get: () => localStorage.getItem('aisa_culture') || 'en-US',
+            set: (value) => localStorage.setItem('aisa_culture', value)
+        };
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script>

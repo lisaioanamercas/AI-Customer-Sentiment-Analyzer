@@ -110,4 +110,7 @@
   <data name="Medium" xml:space="preserve"><value>Medium</value></data>
   <data name="Good" xml:space="preserve"><value>Good</value></data>
   <data name="Strong" xml:space="preserve"><value>Strong</value></data>
+  <data name="NoTrendData" xml:space="preserve"><value>No trend data yet. Analyze some reviews to see sentiment evolution.</value></data>
+  <data name="Refreshing" xml:space="preserve"><value>Refreshing data...</value></data>
+  <data name="CreateAccount" xml:space="preserve"><value>Create a new account</value></data>
 </root>

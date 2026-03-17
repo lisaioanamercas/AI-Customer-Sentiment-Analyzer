@@ -18,6 +18,9 @@ public record ReviewState
     /// <summary>The current list of reviews for the active business profile.</summary>
     public IReadOnlyList<ReviewModel> Reviews { get; init; } = [];
 
+    /// <summary>Sentiment trend data for the dashboard.</summary>
+    public IReadOnlyList<SentimentTrendModel> Trends { get; init; } = [];
+
     /// <summary>Error message from the last failed fetch or analysis.</summary>
     public string? ErrorMessage { get; init; }
 

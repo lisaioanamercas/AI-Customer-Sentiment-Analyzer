@@ -22,6 +22,20 @@ public static class ReviewReducers
     public static ReviewState OnReviewsLoadFailed(ReviewState state, ReviewsLoadFailedAction action) =>
         state with { IsLoading = false, ErrorMessage = action.ErrorMessage };
 
+    // ── Trends ────────────────────────────────────────────────────────────
+
+    [ReducerMethod(typeof(FetchTrendsAction))]
+    public static ReviewState OnFetchTrendsStarted(ReviewState state) =>
+        state with { IsLoading = true, ErrorMessage = null };
+
+    [ReducerMethod]
+    public static ReviewState OnTrendsLoaded(ReviewState state, TrendsLoadedAction action) =>
+        state with { IsLoading = false, Trends = action.Trends, ErrorMessage = null };
+
+    [ReducerMethod]
+    public static ReviewState OnTrendsLoadFailed(ReviewState state, TrendsLoadFailedAction action) =>
+        state with { IsLoading = false, ErrorMessage = action.ErrorMessage };
+
     // ── Add ───────────────────────────────────────────────────────────────
 
     [ReducerMethod]

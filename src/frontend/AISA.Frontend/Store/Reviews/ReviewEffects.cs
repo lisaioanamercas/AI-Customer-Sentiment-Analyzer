@@ -1,5 +1,6 @@
 using Fluxor;
 using AISA.Frontend.Services;
+using AISA.Frontend.Store.Authentication;
 
 namespace AISA.Frontend.Store.Reviews;
 
@@ -13,6 +14,39 @@ public class ReviewEffects
     }
 
     [EffectMethod]
+    public Task HandleAuthEvents(AuthInitializedAction action, IDispatcher dispatcher)
+    {
+        if (action.BusinessProfileId.HasValue)
+        {
+            dispatcher.Dispatch(new FetchReviewsAction(action.BusinessProfileId.Value));
+            dispatcher.Dispatch(new FetchTrendsAction(action.BusinessProfileId.Value));
+        }
+        return Task.CompletedTask;
+    }
+
+    [EffectMethod]
+    public Task HandleLoginSuccess(LoginSuccessAction action, IDispatcher dispatcher)
+    {
+        if (action.BusinessProfileId.HasValue)
+        {
+            dispatcher.Dispatch(new FetchReviewsAction(action.BusinessProfileId.Value));
+            dispatcher.Dispatch(new FetchTrendsAction(action.BusinessProfileId.Value));
+        }
+        return Task.CompletedTask;
+    }
+
+    [EffectMethod]
+    public Task HandleRegisterSuccess(RegisterSuccessAction action, IDispatcher dispatcher)
+    {
+        if (action.BusinessProfileId.HasValue)
+        {
+            dispatcher.Dispatch(new FetchReviewsAction(action.BusinessProfileId.Value));
+            dispatcher.Dispatch(new FetchTrendsAction(action.BusinessProfileId.Value));
+        }
+        return Task.CompletedTask;
+    }
+
+    [EffectMethod]
     public async Task HandleFetchReviews(FetchReviewsAction action, IDispatcher dispatcher)
     {
         try
@@ -20,9 +54,23 @@ public class ReviewEffects
             var reviews = await _apiService.GetReviewsAsync(action.BusinessProfileId);
             dispatcher.Dispatch(new ReviewsLoadedAction(reviews));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            dispatcher.Dispatch(new ReviewsLoadFailedAction("Failed to fetch reviews."));
+            dispatcher.Dispatch(new ReviewsLoadFailedAction(ex.Message));
+        }
+    }
+
+    [EffectMethod]
+    public async Task HandleFetchTrends(FetchTrendsAction action, IDispatcher dispatcher)
+    {
+        try
+        {
+            var trends = await _apiService.GetSentimentTrendsAsync(action.BusinessProfileId);
+            dispatcher.Dispatch(new TrendsLoadedAction(trends));
+        }
+        catch (Exception ex)
+        {
+            dispatcher.Dispatch(new TrendsLoadFailedAction(ex.Message));
         }
     }
 
@@ -62,8 +110,9 @@ public class ReviewEffects
             var result = await _apiService.AnalyzeReviewsAsync(action.BusinessProfileId, action.MaxCount);
             dispatcher.Dispatch(new ReviewsAnalyzedAction(result.Analyzed, result.Failed));
             
-            // Refresh reviews after analysis
+            // Refresh reviews and trends after analysis
             dispatcher.Dispatch(new FetchReviewsAction(action.BusinessProfileId));
+            dispatcher.Dispatch(new FetchTrendsAction(action.BusinessProfileId));
         }
         catch (Exception)
         {
