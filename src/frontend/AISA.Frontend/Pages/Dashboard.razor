@@ -27,28 +27,30 @@ else
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.RateReview" Color="Color.Primary" Size="Size.Large" />
-                <div class="stat-value mt-2">@_totalReviews</div>
+                <div class="stat-value mt-2">@ReviewState.Value.Reviews.Count</div>
                 <div class="stat-label">Total Reviews</div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.ThumbUp" Color="Color.Success" Size="Size.Large" />
-                <div class="stat-value mt-2" style="color: var(--aisa-success);">@_positiveCount</div>
+                <div class="stat-value mt-2" style="color: var(--aisa-success);">@ReviewState.Value.Reviews.Count(r => r.SentimentLabel == "Positive")</div>
                 <div class="stat-label">Positive</div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.ThumbDown" Color="Color.Error" Size="Size.Large" />
-                <div class="stat-value mt-2" style="color: var(--aisa-danger);">@_negativeCount</div>
+                <div class="stat-value mt-2" style="color: var(--aisa-danger);">@ReviewState.Value.Reviews.Count(r => r.SentimentLabel == "Negative")</div>
                 <div class="stat-label">Negative</div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.Favorite" Color="Color.Secondary" Size="Size.Large" />
-                <div class="stat-value mt-2" style="color: var(--mud-palette-secondary);">@_healthScore%</div>
+                <div class="stat-value mt-2" style="color: var(--mud-palette-secondary);">
+                    @(ReviewState.Value.Reviews.Any() ? (int)Math.Round((double)ReviewState.Value.Reviews.Count(r => r.SentimentLabel == "Positive") / ReviewState.Value.Reviews.Count * 100) : 0)%
+                </div>
                 <div class="stat-label">Health Score</div>
             </MudPaper>
         </MudItem>
@@ -100,9 +102,9 @@ else
         <MudText Typo="Typo.h6" Class="mb-3">
             <MudIcon Icon="@Icons.Material.Filled.NewReleases" Class="mr-1" /> Recent Reviews
         </MudText>
-        @if (_recentReviews.Any())
+        @if (ReviewState.Value.Reviews.Any())
         {
-            @foreach (var review in _recentReviews)
+            @foreach (var review in ReviewState.Value.Reviews.OrderByDescending(r => r.CreatedAt).Take(5))
             {
                 var cardClass = review.SentimentLabel?.ToLower() switch
                 {
@@ -148,53 +150,25 @@ else
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
     [Inject] private IApiService ApiService { get; set; } = null!;
 
-    private bool _loading = true;
     private bool _refreshing = false;
-    private int _totalReviews;
-    private int _positiveCount;
-    private int _negativeCount;
-    private int _healthScore;
     private List<SentimentTrendModel> _trends = new();
-    private List<ReviewModel> _recentReviews = new();
 
     protected override async Task OnInitializedAsync()
     {
-        State.OnChange += OnStateChanged;
         await LoadDashboardData();
-    }
-
-    private async void OnStateChanged()
-    {
-        await LoadDashboardData();
-        await InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadDashboardData()
     {
-        if (State.ActiveBusinessProfileId is not null)
+        if (AuthState.Value.BusinessProfileId.HasValue)
         {
+            Dispatcher.Dispatch(new FetchReviewsAction(AuthState.Value.BusinessProfileId.Value));
             try
             {
-                var reviews = await ApiService.GetReviewsAsync(State.ActiveBusinessProfileId.Value);
-                _trends = await ApiService.GetSentimentTrendsAsync(State.ActiveBusinessProfileId.Value);
-
-                _totalReviews = reviews.Count;
-                _positiveCount = reviews.Count(r => r.SentimentLabel == "Positive");
-                _negativeCount = reviews.Count(r => r.SentimentLabel == "Negative");
-                _healthScore = _totalReviews > 0
-                    ? (int)Math.Round((double)_positiveCount / _totalReviews * 100)
-                    : 0;
-
-                _recentReviews = reviews.OrderByDescending(r => r.CreatedAt).Take(5).ToList();
-                State.Reviews = reviews;
+                _trends = await ApiService.GetSentimentTrendsAsync(AuthState.Value.BusinessProfileId.Value);
             }
-            catch (Exception)
-            {
-                // API not available — show empty state
-            }
+            catch { /* trends optional */ }
         }
-
-        _loading = false;
     }
 
     private async Task RefreshData()
@@ -213,10 +187,5 @@ else
         {
             _refreshing = false;
         }
-    }
-
-    public void Dispose()
-    {
-        State.OnChange -= OnStateChanged;
     }
 }
