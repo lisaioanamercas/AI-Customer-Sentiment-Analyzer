@@ -33,7 +33,7 @@ public class AuthService
                 await StoreToken(result.Token);
                 SetAuthHeader(result.Token);
             }
-            return new AuthResult { Success = true, Token = result?.Token ?? "" };
+            return new AuthResult { Success = true, Token = result?.Token ?? "", BusinessProfileId = result?.BusinessProfileId };
         }
 
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
@@ -56,7 +56,7 @@ public class AuthService
                 await StoreToken(result.Token);
                 SetAuthHeader(result.Token);
             }
-            return new AuthResult { Success = true, Token = result?.Token ?? "" };
+            return new AuthResult { Success = true, Token = result?.Token ?? "", BusinessProfileId = result?.BusinessProfileId };
         }
 
         var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
@@ -108,6 +108,7 @@ public class AuthResult
     public bool Success { get; set; }
     public string Token { get; set; } = "";
     public string Error { get; set; } = "";
+    public Guid? BusinessProfileId { get; set; }
 }
 
 public class ErrorResponse

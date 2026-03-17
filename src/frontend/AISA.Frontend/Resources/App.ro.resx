@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Dashboard" xml:space="preserve"><value>Panou Principal</value></data>
+  <data name="Reviews" xml:space="preserve"><value>Recenzii</value></data>
+  <data name="Settings" xml:space="preserve"><value>Setări</value></data>
+  <data name="Logout" xml:space="preserve"><value>Deconectare</value></data>
+  <data name="TotalReviews" xml:space="preserve"><value>Total Recenzii</value></data>
+  <data name="Positive" xml:space="preserve"><value>Pozitiv</value></data>
+  <data name="Negative" xml:space="preserve"><value>Negativ</value></data>
+  <data name="Neutral" xml:space="preserve"><value>Neutru</value></data>
+  <data name="HealthScore" xml:space="preserve"><value>Scor Sănătate</value></data>
+  <data name="SentimentEvolution" xml:space="preserve"><value>Evoluție Sentiment</value></data>
+  <data name="RecentReviews" xml:space="preserve"><value>Recenzii Recente</value></data>
+  <data name="AnalyzeReviews" xml:space="preserve"><value>Analizează Recenzii</value></data>
+  <data name="ReviewInbox" xml:space="preserve"><value>Cutie Recenzii</value></data>
+  <data name="ImportManual CSV" xml:space="preserve"><value>Import Manual (CSV)</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>Descarcă Șablon</value></data>
+  <data name="UploadCSV" xml:space="preserve"><value>Încarcă CSV</value></data>
+  <data name="ReviewsList" xml:space="preserve"><value>Listă Recenzii</value></data>
+  <data name="Search" xml:space="preserve"><value>Căutare</value></data>
+  <data name="Date" xml:space="preserve"><value>Dată</value></data>
+  <data name="Content" xml:space="preserve"><value>Conținut</value></data>
+  <data name="Author" xml:space="preserve"><value>Autor</value></data>
+  <data name="Source" xml:space="preserve"><value>Sursă</value></data>
+  <data name="Rating" xml:space="preserve"><value>Rating</value></data>
+  <data name="Sentiment" xml:space="preserve"><value>Sentiment</value></data>
+  <data name="Score" xml:space="preserve"><value>Scor</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acțiuni</value></data>
+  <data name="BusinessProfile" xml:space="preserve"><value>Profil Business</value></data>
+  <data name="SaveSettings" xml:space="preserve"><value>Salvează Setările</value></data>
+  <data name="Name" xml:space="preserve"><value>Nume</value></data>
+  <data name="Description" xml:space="preserve"><value>Descriere</value></data>
+  <data name="Address" xml:space="preserve"><value>Adresă</value></data>
+  <data name="Category" xml:space="preserve"><value>Categorie</value></data>
+  <data name="SaveProfile" xml:space="preserve"><value>Salvează Profilul</value></data>
+  <data name="Analyzing" xml:space="preserve"><value>Se analizează...</value></data>
+  <data name="SelectBusinessProfile" xml:space="preserve"><value>Te rugăm să selectezi un profil de business activ.</value></data>
+  <data name="Utilizator" xml:space="preserve"><value>Utilizator</value></data>
+  <data name="Navigation" xml:space="preserve"><value>NAVIGARE</value></data>
+  <data name="Plan" xml:space="preserve"><value>PLAN</value></data>
+  <data name="FreeTier" xml:space="preserve"><value>Free Tier (50 recenzii/lună)</value></data>
+  <data name="Login" xml:space="preserve"><value>Autentificare</value></data>
+  <data name="Register" xml:space="preserve"><value>Înregistrare</value></data>
+  <data name="Password" xml:space="preserve"><value>Parolă</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Confirmă Parola</value></data>
+  <data name="NoAccount" xml:space="preserve"><value>Nu ai cont?</value></data>
+  <data name="HaveAccount" xml:space="preserve"><value>Ai deja cont?</value></data>
+  <data name="Authenticating" xml:space="preserve"><value>Se autentifică...</value></data>
+  <data name="CreatingAccount" xml:space="preserve"><value>Se creează contul...</value></data>
+  <data name="PasswordStrength" xml:space="preserve"><value>Forță parolă</value></data>
+  <data name="Weak" xml:space="preserve"><value>Slabă</value></data>
+  <data name="Medium" xml:space="preserve"><value>Medie</value></data>
+  <data name="Good" xml:space="preserve"><value>Bună</value></data>
+  <data name="Strong" xml:space="preserve"><value>Puternică</value></data>
+</root>

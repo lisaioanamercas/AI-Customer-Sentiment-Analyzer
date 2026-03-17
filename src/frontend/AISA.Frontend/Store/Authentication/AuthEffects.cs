@@ -45,7 +45,8 @@ public class AuthEffects
         if (result.Success)
         {
             var (email, fullName, profileId) = ParseToken(result.Token);
-            dispatcher.Dispatch(new LoginSuccessAction(result.Token, email ?? action.Email, fullName ?? "", profileId));
+            var finalProfileId = profileId ?? result.BusinessProfileId;
+            dispatcher.Dispatch(new LoginSuccessAction(result.Token, email ?? action.Email, fullName ?? "", finalProfileId));
         }
         else
         {
@@ -64,7 +65,8 @@ public class AuthEffects
         if (result.Success)
         {
             var (email, fullName, profileId) = ParseToken(result.Token);
-            dispatcher.Dispatch(new RegisterSuccessAction(result.Token, email ?? action.Email, fullName ?? action.FullName, profileId));
+            var finalProfileId = profileId ?? result.BusinessProfileId;
+            dispatcher.Dispatch(new RegisterSuccessAction(result.Token, email ?? action.Email, fullName ?? action.FullName, finalProfileId));
         }
         else
         {
@@ -98,8 +100,15 @@ public class AuthEffects
                 c.Type == "name" ||
                 c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
 
-            var profileIdStr = jwt.Claims.FirstOrDefault(c => c.Type == "businessProfileId")?.Value;
-            Guid? profileId = Guid.TryParse(profileIdStr, out var g) ? g : null;
+            var profileIdStr = jwt.Claims.FirstOrDefault(c => 
+                c.Type == "BusinessProfileId" || 
+                c.Type == "businessProfileId")?.Value;
+
+            Guid? profileId = null;
+            if (!string.IsNullOrEmpty(profileIdStr) && Guid.TryParse(profileIdStr, out var g))
+            {
+                profileId = g;
+            }
 
             return (email, fullName, profileId);
         }

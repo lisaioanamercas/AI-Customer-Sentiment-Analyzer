@@ -20,13 +20,14 @@ LABEL_MAP = {
 @lru_cache(maxsize=1)
 def get_sentiment_pipeline():
     """
-    Loads the sentiment pipeline once (singleton via lru_cache).
-    Uses distilbert-base-uncased-finetuned-sst-2-english — fast and reliable.
+    Loads the multilingual sentiment pipeline once.
+    Uses cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual.
+    Supports English, Romanian, and many others.
     """
-    logger.info("Loading sentiment analysis model...")
+    logger.info("Loading multilingual sentiment analysis model...")
     pipe = pipeline(
         "sentiment-analysis",
-        model="distilbert-base-uncased-finetuned-sst-2-english",
+        model="cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual",
     )
     logger.info("Model loaded successfully!")
     return pipe
@@ -34,10 +35,7 @@ def get_sentiment_pipeline():
 
 def analyze_sentiment(text: str) -> dict:
     """
-    Analyzes the sentiment of the provided text.
-
-    Returns:
-        Dict with 'label' (Positive/Negative/Neutral) and 'score' (0.0-1.0).
+    Analyzes the sentiment of the provided text (EN/RO).
     """
     try:
         pipe = get_sentiment_pipeline()
@@ -46,14 +44,22 @@ def analyze_sentiment(text: str) -> dict:
         logger.error("Pipeline error: %s", e, exc_info=True)
         raise
 
-    raw_label = result["label"]   # "POSITIVE" or "NEGATIVE"
+    # cardiffnlp model returns labels 'negative', 'neutral', 'positive' (lowercase usually)
+    # or sometimes 'LABEL_0', 'LABEL_1', 'LABEL_2'
+    raw_label = result["label"].upper() 
     score = round(result["score"], 4)
 
-    label = LABEL_MAP.get(raw_label, "Neutral")
-
-    # Treat low-confidence predictions as Neutral
-    if score < 0.65:
+    # Map labels dynamically
+    if raw_label in ["POSITIVE", "LABEL_2"]:
+        label = "Positive"
+    elif raw_label in ["NEGATIVE", "LABEL_0"]:
+        label = "Negative"
+    else:
         label = "Neutral"
 
-    logger.info("Analysis done: label=%s, score=%.4f", label, score)
+    # Treat low-confidence predictions as Neutral for better UX
+    if score < 0.45: # Multi-lingual models can have lower confidence distribution
+        label = "Neutral"
+
+    logger.info("Analysis done: text_preview='%s...', label=%s, score=%.4f", text[:30], label, score)
     return {"label": label, "score": score}

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Dashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="Reviews" xml:space="preserve"><value>Reviews</value></data>
+  <data name="Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Logout" xml:space="preserve"><value>Logout</value></data>
+  <data name="TotalReviews" xml:space="preserve"><value>Total Reviews</value></data>
+  <data name="Positive" xml:space="preserve"><value>Positive</value></data>
+  <data name="Negative" xml:space="preserve"><value>Negative</value></data>
+  <data name="Neutral" xml:space="preserve"><value>Neutral</value></data>
+  <data name="HealthScore" xml:space="preserve"><value>Health Score</value></data>
+  <data name="SentimentEvolution" xml:space="preserve"><value>Sentiment Evolution</value></data>
+  <data name="RecentReviews" xml:space="preserve"><value>Recent Reviews</value></data>
+  <data name="AnalyzeReviews" xml:space="preserve"><value>Analyze Reviews</value></data>
+  <data name="ReviewInbox" xml:space="preserve"><value>Review Inbox</value></data>
+  <data name="ImportManual CSV" xml:space="preserve"><value>Import Manual (CSV)</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>Download Template</value></data>
+  <data name="UploadCSV" xml:space="preserve"><value>Upload CSV</value></data>
+  <data name="ReviewsList" xml:space="preserve"><value>Reviews List</value></data>
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Content" xml:space="preserve"><value>Content</value></data>
+  <data name="Author" xml:space="preserve"><value>Author</value></data>
+  <data name="Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Rating" xml:space="preserve"><value>Rating</value></data>
+  <data name="Sentiment" xml:space="preserve"><value>Sentiment</value></data>
+  <data name="Score" xml:space="preserve"><value>Score</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="BusinessProfile" xml:space="preserve"><value>Business Profile</value></data>
+  <data name="SaveSettings" xml:space="preserve"><value>Save Settings</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Address" xml:space="preserve"><value>Address</value></data>
+  <data name="Category" xml:space="preserve"><value>Category</value></data>
+  <data name="SaveProfile" xml:space="preserve"><value>Save Profile</value></data>
+  <data name="Analyzing" xml:space="preserve"><value>Analyzing...</value></data>
+  <data name="SelectBusinessProfile" xml:space="preserve"><value>Please select an active business profile.</value></data>
+  <data name="Utilizator" xml:space="preserve"><value>User</value></data>
+  <data name="Navigation" xml:space="preserve"><value>NAVIGATION</value></data>
+  <data name="Plan" xml:space="preserve"><value>PLAN</value></data>
+  <data name="FreeTier" xml:space="preserve"><value>Free Tier (50 reviews/month)</value></data>
+  <data name="Login" xml:space="preserve"><value>Login</value></data>
+  <data name="Register" xml:space="preserve"><value>Register</value></data>
+  <data name="Password" xml:space="preserve"><value>Password</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
+  <data name="NoAccount" xml:space="preserve"><value>Don't have an account?</value></data>
+  <data name="HaveAccount" xml:space="preserve"><value>Already have an account?</value></data>
+  <data name="Authenticating" xml:space="preserve"><value>Logging in...</value></data>
+  <data name="CreatingAccount" xml:space="preserve"><value>Creating account...</value></data>
+  <data name="PasswordStrength" xml:space="preserve"><value>Password strength</value></data>
+  <data name="Weak" xml:space="preserve"><value>Weak</value></data>
+  <data name="Medium" xml:space="preserve"><value>Medium</value></data>
+  <data name="Good" xml:space="preserve"><value>Good</value></data>
+  <data name="Strong" xml:space="preserve"><value>Strong</value></data>
+</root>

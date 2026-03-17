@@ -20,9 +20,9 @@ public class ReviewEffects
             var reviews = await _apiService.GetReviewsAsync(action.BusinessProfileId);
             dispatcher.Dispatch(new ReviewsLoadedAction(reviews));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            dispatcher.Dispatch(new ReviewsLoadFailedAction(ex.Message));
+            dispatcher.Dispatch(new ReviewsLoadFailedAction("Failed to fetch reviews."));
         }
     }
 
@@ -65,7 +65,7 @@ public class ReviewEffects
             // Refresh reviews after analysis
             dispatcher.Dispatch(new FetchReviewsAction(action.BusinessProfileId));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Error handling
         }

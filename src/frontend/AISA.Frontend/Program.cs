@@ -29,8 +29,18 @@ builder.Services.AddFluxor(options => options
 
 // MudBlazor
 builder.Services.AddMudServices();
+builder.Services.AddLocalization();
 
 var host = builder.Build();
+
+// Inițializează culture din localStorage
+var js = host.Services.GetRequiredService<IJSRuntime>();
+var cultureResult = await js.InvokeAsync<string>("localStorage.getItem", "aisa_culture");
+var culture = cultureResult ?? "en-US";
+
+var cultureInfo = new System.Globalization.CultureInfo(culture);
+System.Globalization.CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Inițializează auth (restabilește token-ul din localStorage)
 var authService = host.Services.GetRequiredService<AuthService>();

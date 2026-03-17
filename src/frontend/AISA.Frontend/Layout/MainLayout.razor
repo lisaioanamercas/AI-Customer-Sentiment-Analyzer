@@ -2,6 +2,8 @@
 @inject NavigationManager Navigation
 @inject IState<AuthState> AuthState
 @inject IDispatcher Dispatcher
+@inject IStringLocalizer<App> L
+@inject IJSRuntime JS
 
 <MudThemeProvider Theme="_theme" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -17,12 +19,29 @@
                                Edge="Edge.Start"
                                OnClick="@ToggleDrawer" />
                 <MudText Typo="Typo.h6" Class="ml-2">
-                    <strong>AISA</strong> — Sentiment Analyzer
+                    <strong>AISA</strong> — @L["Dashboard"]
                 </MudText>
                 <MudSpacer />
+                
+                <!-- Language Toggle -->
+                <MudMenu StartIcon="@Icons.Material.Filled.Language" Color="Color.Inherit" Label="@(CultureInfo.CurrentCulture.Name.StartsWith("ro") ? "RO" : "EN")" Direction="Direction.Bottom" OffsetY="true" Dense="true" Class="mr-4">
+                    <MudMenuItem OnClick='() => SwitchLanguage("en-US")'>
+                        <MudStack Row="true" AlignItems="AlignItems.Center">
+                            <span style="font-size: 1.2rem;">🇬🇧</span>
+                            <MudText>English</MudText>
+                        </MudStack>
+                    </MudMenuItem>
+                    <MudMenuItem OnClick='() => SwitchLanguage("ro-RO")'>
+                        <MudStack Row="true" AlignItems="AlignItems.Center">
+                            <span style="font-size: 1.2rem;">🇷🇴</span>
+                            <MudText>Română</MudText>
+                        </MudStack>
+                    </MudMenuItem>
+                </MudMenu>
+
                 <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined" Class="mr-2">
                     <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
-                    @(AuthState.Value.FullName ?? "Utilizator")
+                    @(AuthState.Value.FullName ?? L["Utilizator"])
                 </MudChip>
                 <MudIconButton Icon="@Icons.Material.Filled.Logout"
                                Color="Color.Inherit"
@@ -86,6 +105,15 @@
     private void ToggleDrawer()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    private async Task SwitchLanguage(string culture)
+    {
+        if (CultureInfo.CurrentCulture.Name != culture)
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "aisa_culture", culture);
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
     }
 
     private void HandleLogout()

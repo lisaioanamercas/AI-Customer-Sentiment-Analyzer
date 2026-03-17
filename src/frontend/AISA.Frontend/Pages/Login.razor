@@ -1,5 +1,6 @@
 @page "/login"
 @layout EmptyLayout
+@inject IStringLocalizer<App> L
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
@@ -33,7 +34,7 @@
                       Immediate="true" />
 
         <MudTextField @bind-Value="_password"
-                      Label="Parolă"
+                      Label="@L["Password"]"
                       Variant="Variant.Outlined"
                       InputType="@(_showPassword ? InputType.Text : InputType.Password)"
                       Adornment="Adornment.End"
@@ -53,12 +54,12 @@
             @if (_loading)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                <span>Se autentifică...</span>
+                <span>@L["Authenticating"]</span>
             }
             else
             {
                 <MudIcon Icon="@Icons.Material.Filled.Login" Class="mr-2" />
-                <span>Autentificare</span>
+                <span>@L["Login"]</span>
             }
         </MudButton>
 
@@ -66,9 +67,9 @@
 
         <div style="text-align: center;">
             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                Nu ai cont?
+                @L["NoAccount"]
                 <MudLink Href="/register" Color="Color.Primary" Typo="Typo.body2">
-                    Înregistrează-te
+                    @L["Register"]
                 </MudLink>
             </MudText>
         </div>

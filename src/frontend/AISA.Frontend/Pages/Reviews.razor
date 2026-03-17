@@ -1,15 +1,15 @@
-@page "/reviews"
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
+@inject IStringLocalizer<App> L
 
 <PageTitle>Reviews — AISA</PageTitle>
 
 <MudText Typo="Typo.h4" Class="mb-4">
-    <MudIcon Icon="@Icons.Material.Filled.RateReview" Class="mr-2" /> Review Inbox
+    <MudIcon Icon="@Icons.Material.Filled.RateReview" Class="mr-2" /> @L["ReviewInbox"]
 </MudText>
 
 <!-- AI Analysis Panel -->
 <MudPaper Class="pa-4 mb-4" Elevation="2">
-    <MudText Typo="Typo.h6" Class="mb-4" Align="Align.Center">AI Sentiment Analysis</MudText>
+    <MudText Typo="Typo.h6" Class="mb-4" Align="Align.Center">@L["AnalyzeReviews"]</MudText>
     <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="4">
         <MudNumericField @bind-Value="_analyzeCount"
                          Label="Reviews to Analyze"
@@ -26,11 +26,11 @@
             @if (ReviewState.Value.IsAnalyzing)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                <span>Analyzing...</span>
+                <span>@L["Analyzing"]</span>
             }
             else
             {
-                <span>Analyze Reviews</span>
+                <span>@L["AnalyzeReviews"]</span>
             }
         </MudButton>
     </MudStack>
@@ -38,14 +38,14 @@
 
 <!-- Import Manual CSV Panel -->
 <MudPaper Class="pa-4 mb-4" Elevation="2">
-    <MudText Typo="Typo.h6" Class="mb-3">Import Manual (CSV)</MudText>
+    <MudText Typo="Typo.h6" Class="mb-3">@L["ImportManual CSV"]</MudText>
     <MudGrid>
         <MudItem xs="12" sm="8" Class="d-flex align-center">
             <MudText Typo="Typo.body2" Class="mr-4">
                 Import reviews from a CSV file with columns: <b>Review Text, Author Name, Source, Date, Rating (1-5)</b>.
             </MudText>
             <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="DownloadTemplate" StartIcon="@Icons.Material.Filled.Download">
-                Download Template
+                @L["DownloadTemplate"]
             </MudButton>
         </MudItem>
         <MudItem xs="12" sm="4" Class="d-flex align-end justify-end">
@@ -59,7 +59,7 @@
                         {
                             <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                         }
-                        Upload CSV
+                        @L["UploadCSV"]
                     </MudButton>
                 </ActivatorContent>
             </MudFileUpload>
@@ -73,24 +73,24 @@
               Filter="FilterFunc" Loading="ReviewState.Value.IsLoading"
               LoadingProgressColor="Color.Primary">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">Reviews List</MudText>
+            <MudText Typo="Typo.h6">@L["ReviewsList"]</MudText>
             <MudSpacer />
             <MudTextField @bind-Value="_searchString"
-                          Placeholder="Search..."
+                          Placeholder="@L["Search"]"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
                           IconSize="Size.Medium"
                           Class="mt-0" />
         </ToolBarContent>
         <HeaderContent>
-            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.CreatedAt)">Date</MudTableSortLabel></MudTh>
-            <MudTh>Content</MudTh>
-            <MudTh>Author</MudTh>
-            <MudTh>Source</MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.Rating ?? 0)">Rating</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.SentimentLabel ?? string.Empty)">Sentiment</MudTableSortLabel></MudTh>
-            <MudTh>Score</MudTh>
-            <MudTh>Actions</MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.CreatedAt)">@L["Date"]</MudTableSortLabel></MudTh>
+            <MudTh>@L["Content"]</MudTh>
+            <MudTh>@L["Author"]</MudTh>
+            <MudTh>@L["Source"]</MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.Rating ?? 0)">@L["Rating"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<ReviewModel, object>(x => x.SentimentLabel ?? string.Empty)">@L["Sentiment"]</MudTableSortLabel></MudTh>
+            <MudTh>@L["Score"]</MudTh>
+            <MudTh>@L["Actions"]</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Data">@context.CreatedAt.ToString("dd MMM yyyy")</MudTd>
@@ -119,7 +119,7 @@
                 <MudChip T="string"
                          Color="@(context.SentimentLabel == "Positive" ? Color.Success : context.SentimentLabel == "Negative" ? Color.Error : Color.Default)"
                          Size="Size.Small">
-                    @(context.SentimentLabel ?? "N/A")
+                    @(context.SentimentLabel is not null ? L[context.SentimentLabel] : "N/A")
                 </MudChip>
             </MudTd>
             <MudTd DataLabel="Scor">@((context.SentimentScore ?? 0).ToString("P0"))</MudTd>

@@ -1,11 +1,11 @@
-@page "/"
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
+@inject IStringLocalizer<App> L
 
 <PageTitle>Dashboard — AISA</PageTitle>
 
 <div class="d-flex align-center mb-4">
     <MudText Typo="Typo.h4">
-        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" /> Dashboard
+        <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" /> @L["Dashboard"]
     </MudText>
     <MudSpacer />
     <MudTooltip Text="Refresh data">
@@ -28,21 +28,21 @@ else
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.RateReview" Color="Color.Primary" Size="Size.Large" />
                 <div class="stat-value mt-2">@ReviewState.Value.Reviews.Count</div>
-                <div class="stat-label">Total Reviews</div>
+                <div class="stat-label">@L["TotalReviews"]</div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.ThumbUp" Color="Color.Success" Size="Size.Large" />
                 <div class="stat-value mt-2" style="color: var(--aisa-success);">@ReviewState.Value.Reviews.Count(r => r.SentimentLabel == "Positive")</div>
-                <div class="stat-label">Positive</div>
+                <div class="stat-label">@L["Positive"]</div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Class="stat-card" Elevation="2">
                 <MudIcon Icon="@Icons.Material.Filled.ThumbDown" Color="Color.Error" Size="Size.Large" />
                 <div class="stat-value mt-2" style="color: var(--aisa-danger);">@ReviewState.Value.Reviews.Count(r => r.SentimentLabel == "Negative")</div>
-                <div class="stat-label">Negative</div>
+                <div class="stat-label">@L["Negative"]</div>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" sm="6" md="3">
@@ -51,7 +51,7 @@ else
                 <div class="stat-value mt-2" style="color: var(--mud-palette-secondary);">
                     @(ReviewState.Value.Reviews.Any() ? (int)Math.Round((double)ReviewState.Value.Reviews.Count(r => r.SentimentLabel == "Positive") / ReviewState.Value.Reviews.Count * 100) : 0)%
                 </div>
-                <div class="stat-label">Health Score</div>
+                <div class="stat-label">@L["HealthScore"]</div>
             </MudPaper>
         </MudItem>
     </MudGrid>
@@ -59,19 +59,19 @@ else
     <!-- Sentiment Trend Table -->
     <MudPaper Class="pa-4 mb-4" Elevation="2">
         <MudText Typo="Typo.h6" Class="mb-3">
-            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-1" /> Sentiment Evolution
+            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-1" /> @L["SentimentEvolution"]
         </MudText>
         @if (_trends.Any())
         {
             <MudSimpleTable Dense="true" Hover="true" Striped="true">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Total</th>
-                        <th>Positive</th>
-                        <th>Negative</th>
-                        <th>Neutral</th>
-                        <th>Avg Score</th>
+                        <th>@L["Date"]</th>
+                        <th>@L["Total"]</th>
+                        <th>@L["Positive"]</th>
+                        <th>@L["Negative"]</th>
+                        <th>@L["Neutral"]</th>
+                        <th>@L["AvgScore"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -100,7 +100,7 @@ else
     <!-- Recent Reviews -->
     <MudPaper Class="pa-4" Elevation="2">
         <MudText Typo="Typo.h6" Class="mb-3">
-            <MudIcon Icon="@Icons.Material.Filled.NewReleases" Class="mr-1" /> Recent Reviews
+            <MudIcon Icon="@Icons.Material.Filled.NewReleases" Class="mr-1" /> @L["RecentReviews"]
         </MudText>
         @if (ReviewState.Value.Reviews.Any())
         {
@@ -124,7 +124,7 @@ else
                             <MudChip T="string"
                                      Color="@(review.SentimentLabel == "Positive" ? Color.Success : review.SentimentLabel == "Negative" ? Color.Error : Color.Default)"
                                      Size="Size.Small">
-                                @(review.SentimentLabel ?? "N/A")
+                                @(review.SentimentLabel is not null ? L[review.SentimentLabel] : "N/A")
                             </MudChip>
                             <MudText Typo="Typo.caption" Class="mt-1">
                                 @((review.SentimentScore ?? 0).ToString("P0"))
