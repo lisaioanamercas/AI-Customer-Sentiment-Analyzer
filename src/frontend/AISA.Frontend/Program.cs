@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
-using AISA.Frontend;
 using AISA.Frontend.Services;
+using Fluxor;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -21,7 +21,10 @@ builder.Services.AddAuthorizationCore();
 
 // Servicii aplicație
 builder.Services.AddScoped<IApiService, ApiService>();
-builder.Services.AddSingleton<StateContainer>();
+
+builder.Services.AddFluxor(options => options
+    .ScanAssemblies(typeof(Program).Assembly)
+    .UseRouting());
 
 // MudBlazor
 builder.Services.AddMudServices();

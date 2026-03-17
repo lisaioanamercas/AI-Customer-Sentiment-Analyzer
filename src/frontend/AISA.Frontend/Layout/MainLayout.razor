@@ -1,9 +1,7 @@
 @inherits LayoutComponentBase
-@inject AuthService AuthService
-@inject CustomAuthStateProvider AuthStateProvider
 @inject NavigationManager Navigation
-@inject IApiService ApiService
-@inject StateContainer State
+@inject IState<AuthState> AuthState
+@inject IDispatcher Dispatcher
 
 <MudThemeProvider Theme="_theme" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -24,7 +22,7 @@
                 <MudSpacer />
                 <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined" Class="mr-2">
                     <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
-                    @_userName
+                    @(AuthState.Value.FullName ?? "Utilizator")
                 </MudChip>
                 <MudIconButton Icon="@Icons.Material.Filled.Logout"
                                Color="Color.Inherit"
@@ -49,54 +47,12 @@
 
 @code {
     private bool _drawerOpen = true;
-    private string _userName = "Utilizator";
 
-    private readonly MudTheme _theme = new()
+    protected override void OnInitialized()
     {
-        PaletteLight = new PaletteLight
-        {
-            Primary = "#6366f1",
-            Secondary = "#8b5cf6",
-            Success = "#10b981",
-            Error = "#ef4444",
-            Warning = "#f59e0b",
-            Info = "#3b82f6",
-        },
-        PaletteDark = new PaletteDark
-        {
-            Primary = "#6366f1",
-            Secondary = "#8b5cf6",
-            Success = "#10b981",
-            Error = "#ef4444",
-            Warning = "#f59e0b",
-            Info = "#3b82f6",
-            Background = "#0f172a",
-            Surface = "#1e293b",
-            AppbarBackground = "#1e293b",
-            DrawerBackground = "#1e293b",
-            TextPrimary = "#f1f5f9",
-            TextSecondary = "#94a3b8",
-        }
-    };
-
-    protected override async Task OnInitializedAsync()
-    {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        if (user.Identity?.IsAuthenticated == true)
-        {
-            _userName = user.Identity.Name ?? "Utilizator";
-            
-            // Incarcă profilul daca nu e deja în State
-            if (State.CurrentProfile is null)
-            {
-                try
-                {
-                    State.CurrentProfile = await ApiService.GetMyBusinessProfileAsync();
-                }
-                catch { /* Silent fail */ }
-            }
-        }
+        base.OnInitialized();
+        // Trigger auth initialization from localStorage
+        Dispatcher.Dispatch(new InitializeAuthAction());
     }
 
     private void ToggleDrawer()
@@ -104,10 +60,9 @@
         _drawerOpen = !_drawerOpen;
     }
 
-    private async Task HandleLogout()
+    private void HandleLogout()
     {
-        await AuthService.LogoutAsync();
-        AuthStateProvider.NotifyAuthStateChanged();
+        Dispatcher.Dispatch(new LogoutAction());
         Navigation.NavigateTo("/login", forceLoad: true);
     }
 }

@@ -1,5 +1,5 @@
 @page "/"
-@implements IDisposable
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 <PageTitle>Dashboard — AISA</PageTitle>
 
@@ -142,9 +142,11 @@ else
 }
 
 @code {
-    [Inject] private IApiService ApiService { get; set; } = null!;
-    [Inject] private StateContainer State { get; set; } = null!;
+    [Inject] private IState<AuthState> AuthState { get; set; } = null!;
+    [Inject] private IState<ReviewState> ReviewState { get; set; } = null!;
+    [Inject] private IDispatcher Dispatcher { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private IApiService ApiService { get; set; } = null!;
 
     private bool _loading = true;
     private bool _refreshing = false;
