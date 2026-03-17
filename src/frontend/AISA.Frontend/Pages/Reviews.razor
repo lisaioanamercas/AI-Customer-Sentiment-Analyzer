@@ -1,5 +1,5 @@
 @page "/reviews"
-@implements IDisposable
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 <PageTitle>Reviews — AISA</PageTitle>
 
@@ -22,8 +22,8 @@
                    Style="height:56px; min-width:200px;"
                    StartIcon="@Icons.Material.Filled.Psychology"
                    OnClick="RunAnalysis"
-                   Disabled="_analyzing">
-            @if (_analyzing)
+                   Disabled="ReviewState.Value.IsAnalyzing">
+            @if (ReviewState.Value.IsAnalyzing)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                 <span>Analyzing...</span>
@@ -69,8 +69,8 @@
 
 <!-- Reviews Table -->
 <MudPaper Class="pa-4" Elevation="2">
-    <MudTable Items="_reviews" Hover="true" Striped="true" Dense="true"
-              Filter="FilterFunc" Loading="_loading"
+    <MudTable Items="ReviewState.Value.Reviews" Hover="true" Striped="true" Dense="true"
+              Filter="FilterFunc" Loading="ReviewState.Value.IsLoading"
               LoadingProgressColor="Color.Primary">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Reviews List</MudText>
@@ -137,84 +137,43 @@
 </MudPaper>
 
 @code {
-    [Inject] private IApiService ApiService { get; set; } = null!;
-    [Inject] private StateContainer State { get; set; } = null!;
+    [Inject] private IState<AuthState> AuthState { get; set; } = null!;
+    [Inject] private IState<ReviewState> ReviewState { get; set; } = null!;
+    [Inject] private IDispatcher Dispatcher { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private IApiService ApiService { get; set; } = null!;
     [Inject] private IJSRuntime JS { get; set; } = null!;
 
-    private List<ReviewModel> _reviews = new();
-    private bool _loading = true;
-    private bool _submitting;
     private bool _uploading;
-    private bool _analyzing;
     private string _searchString = string.Empty;
 
     // AI Analysis options
     private int _analyzeCount = 20;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        State.OnChange += OnStateChanged;
-        await LoadReviews();
+        base.OnInitialized();
+        LoadReviews();
     }
 
-    private async void OnStateChanged()
+    private void LoadReviews()
     {
-        await LoadReviews();
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task LoadReviews()
-    {
-        _loading = true;
-
-        if (State.ActiveBusinessProfileId is not null)
+        if (AuthState.Value.BusinessProfileId.HasValue)
         {
-            try
-            {
-                _reviews = await ApiService.GetReviewsAsync(State.ActiveBusinessProfileId.Value);
-            }
-            catch (Exception)
-            {
-                Snackbar.Add("Could not load reviews.", Severity.Error);
-            }
+            Dispatcher.Dispatch(new FetchReviewsAction(AuthState.Value.BusinessProfileId.Value));
         }
-
-        _loading = false;
     }
 
-    private async Task RunAnalysis()
+    private void RunAnalysis()
     {
-        if (State.ActiveBusinessProfileId is null)
+        if (!AuthState.Value.BusinessProfileId.HasValue)
         {
             Snackbar.Add("Please select an active business profile.", Severity.Warning);
             return;
         }
 
-        _analyzing = true;
-        try
-        {
-            var result = await ApiService.AnalyzeReviewsAsync(
-                State.ActiveBusinessProfileId.Value, _analyzeCount);
-
-            if (result.Analyzed > 0)
-            {
-                Snackbar.Add($"Done! Analyzed {result.Analyzed} review(s){(result.Failed > 0 ? $", {result.Failed} failed" : "")}.", Severity.Success);
-                await LoadReviews();
-            }
-            else
-            {
-                Snackbar.Add("No unanalyzed reviews found.", Severity.Info);
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Analysis error: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _analyzing = false;
-        }
+        Dispatcher.Dispatch(new AnalyzeReviewsAction(AuthState.Value.BusinessProfileId.Value, _analyzeCount));
+        Snackbar.Add("Analysis started...", Severity.Info);
     }
 
     private async Task DownloadTemplate()
@@ -229,7 +188,7 @@
 
     private async Task UploadCsv(IBrowserFile file)
     {
-        if (State.ActiveBusinessProfileId is null)
+        if (!AuthState.Value.BusinessProfileId.HasValue)
         {
             Snackbar.Add("Selectează un profil de business activ.", Severity.Warning);
             return;
@@ -240,9 +199,9 @@
         _uploading = true;
         try
         {
-            var message = await ApiService.ImportCsvAsync(State.ActiveBusinessProfileId.Value, file);
+            var message = await ApiService.ImportCsvAsync(AuthState.Value.BusinessProfileId.Value, file);
             Snackbar.Add(message, Severity.Success);
-            await LoadReviews(); // refresh
+            LoadReviews(); // refresh
         }
         catch (Exception ex)
         {
@@ -251,22 +210,13 @@
         finally
         {
             _uploading = false;
-            StateHasChanged();
         }
     }
 
-    private async Task DeleteReview(Guid id)
+    private void DeleteReview(Guid id)
     {
-        try
-        {
-            await ApiService.DeleteReviewAsync(id);
-            _reviews.RemoveAll(r => r.Id == id);
-            Snackbar.Add("Review deleted.", Severity.Info);
-        }
-        catch (Exception)
-        {
-            Snackbar.Add("Error deleting review.", Severity.Error);
-        }
+        Dispatcher.Dispatch(new DeleteReviewAction(id));
+        Snackbar.Add("Review deletion requested.", Severity.Info);
     }
 
     private bool FilterFunc(ReviewModel review)
@@ -277,10 +227,5 @@
         return review.Content.Contains(_searchString, StringComparison.OrdinalIgnoreCase)
             || (review.AuthorName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false)
             || review.Source.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
-    }
-
-    public void Dispose()
-    {
-        State.OnChange -= OnStateChanged;
     }
 }

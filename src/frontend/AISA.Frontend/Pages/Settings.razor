@@ -1,5 +1,5 @@
 @page "/settings"
-@implements IDisposable
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 <PageTitle>Settings — AISA</PageTitle>
 
@@ -10,11 +10,11 @@
 <MudPaper Class="pa-4" Elevation="2">
     <MudText Typo="Typo.h6" Class="mb-3">Business Profile</MudText>
 
-    @if (State.CurrentProfile is not null)
+    @if (_currentProfile is not null)
     {
         <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mb-3">
-            Active profile: <strong>@State.CurrentProfile.Name</strong>
-            (@State.CurrentProfile.SubscriptionTier · @State.CurrentProfile.ReviewCount reviews)
+            Active profile: <strong>@_currentProfile.Name</strong>
+            (@_currentProfile.SubscriptionTier · @_currentProfile.ReviewCount reviews)
         </MudAlert>
     }
 
@@ -58,8 +58,9 @@
 </MudPaper>
 
 @code {
+    [Inject] private IState<AuthState> AuthState { get; set; } = null!;
+    [Inject] private IDispatcher Dispatcher { get; set; } = null!;
     [Inject] private IApiService ApiService { get; set; } = null!;
-    [Inject] private StateContainer State { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
 
     private string _name = string.Empty;
@@ -69,47 +70,42 @@
     private string? _googleMapsUrl;
     private string? _tripAdvisorUrl;
     private bool _saving;
+    private BusinessProfileModel? _currentProfile;
 
     protected override async Task OnInitializedAsync()
     {
-        State.OnChange += OnStateChanged;
-
-        // Dacă profilul nu e încă în State (ex: refresh direct pe /settings),
-        // îl încărcăm direct de pe API fără să așteptăm MainLayout.
-        if (State.CurrentProfile is null)
+        if (AuthState.Value.BusinessProfileId.HasValue)
         {
             try
             {
-                State.CurrentProfile = await ApiService.GetMyBusinessProfileAsync();
+                _currentProfile = await ApiService.GetBusinessProfileAsync(AuthState.Value.BusinessProfileId.Value);
+                PopulateFields();
             }
-            catch { /* ignorăm, formularul rămâne gol */ }
+            catch { }
         }
-
-        PopulateFields();
-    }
-
-    private void OnStateChanged()
-    {
-        PopulateFields();
-        InvokeAsync(StateHasChanged); // forțăm re-renderul pe thread-ul UI
+        else
+        {
+            // Try to fetch "my" profile if ID not in token
+            try
+            {
+                _currentProfile = await ApiService.GetMyBusinessProfileAsync();
+                PopulateFields();
+            }
+            catch { }
+        }
     }
 
     private void PopulateFields()
     {
-        if (State.CurrentProfile is not null && string.IsNullOrEmpty(_name))
+        if (_currentProfile is not null && string.IsNullOrEmpty(_name))
         {
-            _name = State.CurrentProfile.Name;
-            _description = State.CurrentProfile.Description;
-            _category = State.CurrentProfile.Category;
-            _address = State.CurrentProfile.Address;
-            _googleMapsUrl = State.CurrentProfile.GoogleMapsUrl;
-            _tripAdvisorUrl = State.CurrentProfile.TripAdvisorUrl;
+            _name = _currentProfile.Name;
+            _description = _currentProfile.Description;
+            _category = _currentProfile.Category;
+            _address = _currentProfile.Address;
+            _googleMapsUrl = _currentProfile.GoogleMapsUrl;
+            _tripAdvisorUrl = _currentProfile.TripAdvisorUrl;
         }
-    }
-
-    public void Dispose()
-    {
-        State.OnChange -= OnStateChanged;
     }
 
     private async Task SaveProfile()
@@ -126,22 +122,22 @@
         {
             BusinessProfileModel profile;
             
-            if (State.CurrentProfile is not null)
+            if (_currentProfile is not null)
             {
-                // Update existent
                 profile = await ApiService.UpdateBusinessProfileAsync(
-                    State.CurrentProfile.Id, _name, _description, _category, _address, _googleMapsUrl, _tripAdvisorUrl);
+                    _currentProfile.Id, _name, _description, _category, _address, _googleMapsUrl, _tripAdvisorUrl);
                 Snackbar.Add("Profil actualizat cu succes!", Severity.Success);
             }
             else
             {
-                // Creare nou (acum include si URL-urile)
                 profile = await ApiService.CreateBusinessProfileAsync(
                     _name, _description, _category, _address, _googleMapsUrl, _tripAdvisorUrl);
                 Snackbar.Add("Profil creat cu succes!", Severity.Success);
             }
 
-            State.CurrentProfile = profile;
+            _currentProfile = profile;
+            // Update auth state if name changed
+            Dispatcher.Dispatch(new InitializeAuthAction()); 
         }
         catch (Exception ex)
         {

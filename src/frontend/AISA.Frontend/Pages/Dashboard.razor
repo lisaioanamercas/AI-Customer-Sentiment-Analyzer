@@ -16,7 +16,7 @@
     </MudTooltip>
 </div>
 
-@if (_loading)
+@if (ReviewState.Value.IsLoading)
 {
     <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
 }
